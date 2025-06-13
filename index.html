@@ -1,0 +1,1191 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>Project Location Tracker</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Sarabun:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        :root {
+            --primary-color: #3B82F6; /* Blue 500 */
+            --secondary-color: #6B7280; /* Gray 500 */
+            --danger-color: #EF4444; /* Red 500 */
+            --warning-color: #F59E0B; /* Amber 500 */
+            --success-color: #10B981; /* Emerald 500 */
+            --light-gray: #F9FAFB;
+            --medium-gray: #E5E7EB;
+        }
+        html, body { 
+            height: 100%; 
+            margin: 0; 
+            font-family: 'Inter', 'Sarabun', sans-serif; 
+            background-color: var(--light-gray); 
+        }
+        .app-view { display: none; }
+        .app-view.active { display: block; }
+        body { display: flex; align-items: flex-start; justify-content: center; padding: 1rem; }
+        .main-card { 
+            background-color: white; 
+            border-radius: 0.75rem; 
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.05);
+            transition: all 0.2s ease-in-out; 
+            width: 100%;
+        }
+        .project-card {
+            background-color: white; 
+            border: 1px solid var(--medium-gray);
+            border-radius: 0.75rem; 
+            box-shadow: 0 1px 2px 0 rgba(0,0,0,0.05);
+            transition: all 0.2s ease-in-out;
+        }
+        .project-card:hover { 
+            transform: translateY(-4px); 
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+            border-color: var(--primary-color);
+        }
+        #map, #dashboard-map { height: 250px; width: 100%; border-radius: 0.5rem; overflow: hidden; z-index: 10; }
+        #messageBox, #loadingSpinner { position: fixed; top: 1rem; left: 50%; transform: translateX(-50%); z-index: 9999; padding: 0.75rem 1.25rem; border-radius: 0.5rem; box-shadow: 0 4px 6px rgba(0,0,0,0.1); font-size: 1rem; font-weight: 500; display: flex; align-items: center; gap: 0.5rem; }
+        #loadingSpinner { display: none; background-color: #111827; color: white; }
+        #messageBox { display: none; }
+        .modal-overlay { position: fixed; inset: 0; background-color: rgba(17, 24, 39, 0.6); display: none; align-items: center; justify-content: center; z-index: 9998; backdrop-filter: blur(4px); }
+        .modal-content { background-color: white; border-radius: 0.75rem; padding: 1.5rem; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1), 0 10px 10px -5px rgba(0,0,0,0.04); max-width: 400px; width: 90%; text-align: center; }
+        input[type="text"], input[type="password"], select { 
+            width: 100%; padding: 0.6rem 0.75rem; font-size: 0.875rem; 
+            border: 1px solid #D1D5DB; border-radius: 0.375rem; 
+            transition: border-color 0.2s, box-shadow 0.2s;
+            background-color: white;
+        }
+        input[type="text"]:focus, input[type="password"]:focus, select:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.4);
+        }
+        .action-row { 
+            display: grid; 
+            grid-template-columns: repeat(2, 1fr);
+            gap: 0.5rem;
+        }
+        .btn { 
+            padding: 0.6rem 1rem; font-size: 0.875rem; font-weight: 500;
+            border-radius: 0.375rem; border: 1px solid transparent; 
+            transition: all 0.2s ease-in-out; 
+            display: flex; align-items: center; justify-content: center; gap: 0.5rem; cursor: pointer;
+            box-shadow: 0 1px 2px 0 rgba(0,0,0,0.05);
+        }
+        .btn:hover { transform: translateY(-2px); box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1), 0 2px 4px -1px rgba(0,0,0,0.06); }
+        .btn-icon { padding: 0.6rem; }
+        .btn-primary { background-color: var(--primary-color); color: white; border-color: var(--primary-color); }
+        .btn-secondary { background-color: white; color: var(--secondary-color); border-color: var(--medium-gray); }
+        .btn-secondary:hover { background-color: #F3F4F6; }
+        .btn-danger { background-color: var(--danger-color); color: white; border-color: var(--danger-color); }
+        .btn-warning { background-color: var(--warning-color); color: white; border-color: var(--warning-color); }
+        .btn-success { background-color: var(--success-color); color: white; border-color: var(--success-color); }
+        table { border-collapse: collapse; text-align: left; width: 100%; }
+        thead { background-color: #F9FAFB; }
+        th, td { padding: 0.75rem; border-bottom: 1px solid var(--medium-gray); font-size: 0.875rem; }
+        th { font-weight: 600; color: #374151; }
+        td { color: #4B5563; word-break: break-word; }
+        tr:last-child td { border-bottom: none; }
+        .table-scroll { max-height: calc(100vh - 20rem); overflow-y: auto; border: 1px solid var(--medium-gray); border-radius: 0.5rem; }
+        .hidden-col { display: none; }
+        .pending-icon { color: var(--warning-color); margin-left: 4px; }
+    </style>
+</head>
+<body>
+    <div id="app-container" class="w-full max-w-md mx-auto">
+        <!-- View 1: Project Selection -->
+        <div id="project-selection-view" class="app-view">
+            <div class="main-card p-4 sm:p-6">
+                <div class="flex justify-between items-center mb-6">
+                    <h2 class="text-xl sm:text-2xl font-bold text-gray-800">Projects</h2>
+                    <button id="manage-projects-btn" class="btn btn-secondary btn-icon text-sm" title="Manage Projects"><i class="fas fa-cog"></i></button>
+                </div>
+                <div id="project-list" class="grid grid-cols-2 gap-4">
+                    <!-- Project cards will be injected here -->
+                </div>
+            </div>
+        </div>
+
+        <!-- View: Admin Menu -->
+        <div id="admin-menu-view" class="app-view">
+            <div class="main-card p-4 sm:p-6">
+                <div class="flex justify-between items-center mb-6">
+                    <h2 class="text-xl sm:text-2xl font-bold text-gray-800">Admin Menu</h2>
+                    <button id="menu-back-to-selection-btn" class="btn btn-secondary text-sm"><i class="fas fa-arrow-left"></i> Back</button>
+                </div>
+                <div class="space-y-4">
+                    <button id="goto-manage-projects-btn" class="w-full btn btn-primary text-lg p-6 justify-start">
+                        <i class="fas fa-edit w-8"></i>
+                        <span>Manage Projects</span>
+                    </button>
+                    <button id="goto-dashboards-btn" class="w-full btn btn-primary text-lg p-6 justify-start">
+                        <i class="fas fa-chart-bar w-8"></i>
+                        <span>Dashboard</span>
+                    </button>
+                    <button id="goto-id-field-btn" class="w-full btn btn-primary text-lg p-6 justify-start">
+                        <i class="fas fa-id-card w-8"></i>
+                        <span>Manage IDs</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- View 2: CMS/Admin -->
+        <div id="admin-view" class="app-view">
+            <div class="main-card p-4 sm:p-6">
+                <div class="flex justify-between items-center mb-6">
+                    <h2 class="text-xl sm:text-2xl font-bold text-gray-800">Manage Projects</h2>
+                    <button id="back-to-menu-btn" class="btn btn-secondary text-sm"><i class="fas fa-arrow-left"></i> Back</button>
+                </div>
+                <form id="add-project-form" class="flex gap-2 mb-4"><input id="new-project-name" type="text" class="flex-grow" placeholder="New Project Name" required><button type="submit" class="btn btn-primary"><i class="fas fa-plus"></i> Add</button></form>
+                <div id="admin-project-list" class="space-y-2">
+                    <!-- Admin project list will be injected here -->
+                </div>
+            </div>
+        </div>
+
+        <!-- View: ID Field -->
+        <div id="id-field-view" class="app-view">
+            <div class="main-card p-4 sm:p-6 h-full flex flex-col">
+                 <div class="flex justify-between items-center mb-4">
+                    <h2 class="text-xl sm:text-2xl font-bold text-gray-800">Manage IDs</h2>
+                    <div class="space-x-2">
+                        <button id="edit-id-field-btn" class="btn btn-secondary btn-icon text-sm" title="Edit Names"><i class="fas fa-pencil-alt"></i></button>
+                        <button id="save-id-field-btn" class="hidden btn btn-success text-sm">Save</button>
+                    </div>
+                 </div>
+                 <div class="mb-4">
+                     <input id="id-field-search" type="text" placeholder="Search by ID or Name..." class="w-full">
+                 </div>
+                 <div class="flex-grow table-scroll">
+                    <table class="w-full">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Name</th>
+                            </tr>
+                        </thead>
+                        <tbody id="id-field-table-body">
+                            <!-- Data will be populated by JS -->
+                        </tbody>
+                    </table>
+                 </div>
+                 <button id="id-field-back-to-menu-btn" class="btn btn-secondary text-sm mt-4"><i class="fas fa-arrow-left"></i> Back</button>
+            </div>
+        </div>
+
+
+        <!-- View: Dashboard -->
+        <div id="dashboard-view" class="app-view">
+            <div class="main-card p-4 sm:p-6 space-y-6">
+                <div class="flex justify-between items-center">
+                    <h2 class="text-xl sm:text-2xl font-bold text-gray-800">Dashboard</h2>
+                    <button id="dashboard-back-to-menu-btn" class="btn btn-secondary text-sm"><i class="fas fa-arrow-left"></i> Back</button>
+                </div>
+                <div>
+                    <label for="dashboard-project-selector" class="block text-sm font-medium text-gray-700 mb-1">Select Project</label>
+                    <select id="dashboard-project-selector"></select>
+                </div>
+                <div id="dashboard-content" class="hidden space-y-6">
+                    <!-- KPIs -->
+                    <div class="grid grid-cols-2 gap-4">
+                        <div class="bg-gray-50 p-4 rounded-lg text-center">
+                            <p class="text-sm text-gray-500">Total Check-ins</p>
+                            <p id="kpi-total-checkins" class="text-2xl font-bold text-primary-color">0</p>
+                        </div>
+                        <div class="bg-gray-50 p-4 rounded-lg text-center">
+                            <p class="text-sm text-gray-500">Employees</p>
+                            <p id="kpi-unique-employees" class="text-2xl font-bold text-primary-color">0</p>
+                        </div>
+                    </div>
+                     <!-- Map -->
+                    <div>
+                         <h3 class="text-lg font-semibold text-gray-900 mb-2">Locations Overview</h3>
+                         <div id="dashboard-map"></div>
+                    </div>
+                    <!-- Employee Summary Table -->
+                    <div>
+                        <h3 class="text-lg font-semibold text-gray-900 mb-2">Employee Summary</h3>
+                        <div class="table-scroll">
+                            <table class="w-full">
+                                <thead>
+                                    <tr>
+                                        <th>ID</th>
+                                        <th>Name</th>
+                                        <th class="text-center">Check-ins</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="dashboard-summary-table">
+                                    <!-- Summary rows will be injected here -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+                 <div id="dashboard-placeholder" class="text-center text-gray-500 py-10">
+                    <p>Please select a project to view the summary.</p>
+                 </div>
+            </div>
+        </div>
+        
+        <!-- View 3: Location Tracker -->
+        <div id="tracker-view" class="app-view">
+            <div class="main-card p-4 space-y-4">
+                <div class="flex justify-between items-center">
+                    <button id="home-button" class="btn btn-secondary btn-icon" title="Go Home"><i class="fas fa-home"></i></button>
+                    <h3 id="tracker-title" class="text-lg sm:text-xl font-semibold text-gray-800 text-center truncate"></h3>
+                    <div style="width: 40px;"></div> <!-- Spacer -->
+                </div>
+                <div id="map"></div>
+                <div class="p-3 rounded-lg bg-blue-50 border border-blue-200">
+                    <div class="flex justify-center items-center gap-4 text-xs font-medium text-gray-700">
+                        <p>Lat: <span id="lat" class="font-bold text-blue-600">--</span></p>
+                        <p>Lng: <span id="lng" class="font-bold text-blue-600">--</span></p>
+                        <button id="currentLocationButton" class="p-2 rounded-md bg-purple-500 text-white hover:bg-purple-600 transition" title="Use Current Location"><i class="fas fa-map-marker-alt"></i></button>
+                    </div>
+                </div>
+                <div class="space-y-3">
+                    <div class="input-row"><label for="employeeIdInput">Employee ID</label><input id="employeeIdInput" type="text" placeholder="6-digit Employee ID" /></div>
+                    <div class="input-row">
+                        <label for="locationSearchInput">Search Location</label>
+                        <div class="flex-1 flex">
+                            <div class="relative w-full">
+                                <input id="locationSearchInput" type="text" placeholder="e.g., Bangkok" autocomplete="off" class="!rounded-r-none" />
+                                <i id="clearSearchIcon" class="fas fa-times absolute z-10 top-1/2 right-3 -translate-y-1/2 cursor-pointer text-gray-400" style="display:none;"></i>
+                                <div id="autocompleteList" class="absolute top-full left-0 right-0 bg-white border z-50 rounded-b-md hidden"></div>
+                            </div>
+                            <button id="searchLocationButton" class="btn btn-secondary btn-icon !rounded-l-none -ml-px">
+                                <i class="fas fa-search"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                <div id="normalActionButtons" class="action-row">
+                    <button id="saveButton" class="btn btn-success"><i class="fas fa-save"></i><span>Save</span></button>
+                    <button id="uploadButton" class="btn btn-warning"><i class="fas fa-upload"></i><span>Upload</span></button>
+                    <button id="exportCsvButton" class="btn btn-primary"><i class="fas fa-file-export"></i><span>Export</span></button>
+                    <button id="undoButton" class="btn btn-secondary"><i class="fas fa-undo"></i><span>Undo</span></button>
+                </div>
+                <div id="editActionButtons" class="action-row hidden"><button id="confirmEditButton" class="btn btn-warning">Save Edit</button><button id="cancelEditButton" class="btn btn-secondary">Cancel</button></div>
+                <div class="relative mt-4">
+                    <div class="flex justify-between items-center bg-gray-50 p-3 rounded-t-lg border-b border-gray-200">
+                        <h4 class="font-semibold text-sm">Saved Locations</h4>
+                        <button id="clearAllButton" class="text-xs btn btn-danger p-1">Clear All</button>
+                    </div>
+                    <div class="table-scroll"><table class="w-full"><thead><tr><th>ID</th><th>Timestamp</th><th>Map</th><th>Actions</th></tr></thead><tbody id="savedLocationsTableBody"></tbody></table></div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Modals -->
+    <div id="passwordModal" class="modal-overlay"><div class="modal-content"><h4 class="text-xl font-bold mb-4">Please enter password</h4><form id="password-form" class="space-y-4"><input id="password-input" type="password" class="w-full" required><div class="flex justify-end gap-2"><button type="button" id="cancel-password-btn" class="btn btn-secondary">Cancel</button><button type="submit" class="btn btn-primary">Confirm</button></div></form></div></div>
+    <div id="confirmationModal" class="modal-overlay"><div class="modal-content"><h4 id="modalTitle" class="text-xl font-bold mb-4"></h4><p id="modalMessage" class="text-gray-700 mb-6"></p><div class="flex justify-center gap-4"><button id="confirmActionButton" class="btn btn-danger">Confirm</button><button id="cancelActionButton" class="btn btn-secondary">Cancel</button></div></div></div>
+    
+    <div id="messageBox"></div><div id="loadingSpinner"><i class="fas fa-spinner fa-spin"></i><span>Loading...</span></div>
+    
+    <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+    <script>
+        // --- CONSTANTS AND GLOBAL VARIABLES --- //
+        const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbxj2nYO6Tm3sGMC4bevVZGRVZNdGn5NLScRXGYsp2ENlsPKZexjwC5CpiXtSGO4GTgoxg/exec';
+        
+        let map, currentMarker = null, permanentMarkers = L.layerGroup(), permanentMarkersMap = {}, currentLat = null, currentLng = null, editingId = null, editingMarker = null;
+        let dashboardMap;
+        let savedLocations = []; // Data from Google Sheet
+        let pendingLocations = []; // Data waiting to be uploaded
+        let currentProjectName = null;
+        let confirmActionCallback = null; // To hold the confirmation callback
+        let isIdFieldEditing = false;
+        let idFieldData = [
+            {id: 345, name: 'Sumalee Manosong'},
+            {id: 399, name: 'Panjapon Deemun'},
+            {id: 450, name: 'Nutra Bislimin'},
+            {id: 452, name: 'La-ongdao Sriapai'},
+            {id: 456, name: 'Piyamart Kanha'},
+            {id: 766, name: 'Porntip Promngam'},
+            {id: 781, name: 'Thanyarat Kasemrat'},
+            {id: 790, name: 'Darunee Sripen'},
+            {id: 797, name: 'Sutheera Pimat'},
+            {id: 839, name: 'Ampa Wunmaesod'},
+            {id: 855, name: 'Panisara Phutongchai'},
+            {id: 856, name: 'Pornwadee Boonkaewsue'},
+            {id: 857, name: 'Sawanya Jariya'},
+            {id: 861, name: 'Pornpimon Phasuk'},
+            {id: 862, name: 'Teeraporn Meengao'},
+            {id: 863, name: 'Premruethai Boonyok'},
+            {id: 864, name: 'Arisa Sukhom'},
+            {id: 865, name: 'Sukanyarat Kotchaphum'}
+        ];
+
+
+        // --- DOM ELEMENT SELECTORS --- //
+        const allViews = document.querySelectorAll(".app-view");
+        const projectSelectionView = document.getElementById("project-selection-view"),
+            adminMenuView = document.getElementById("admin-menu-view"),
+            dashboardView = document.getElementById("dashboard-view"),
+            idFieldView = document.getElementById("id-field-view"),
+            trackerView = document.getElementById("tracker-view"),
+            adminView = document.getElementById("admin-view"),
+            projectList = document.getElementById("project-list"),
+            homeButton = document.getElementById("home-button"),
+            trackerTitle = document.getElementById("tracker-title"),
+            loadingSpinner = document.getElementById("loadingSpinner"),
+            messageBox = document.getElementById("messageBox"),
+            savedLocationsTableBody = document.getElementById("savedLocationsTableBody"),
+            employeeIdInput = document.getElementById("employeeIdInput"),
+            locationSearchInput = document.getElementById("locationSearchInput"),
+            clearSearchIcon = document.getElementById("clearSearchIcon"),
+            autocompleteList = document.getElementById("autocompleteList"),
+            confirmationModal = document.getElementById("confirmationModal"),
+            modalTitle = document.getElementById("modalTitle"),
+            modalMessage = document.getElementById("modalMessage"),
+            confirmActionButton = document.getElementById("confirmActionButton"),
+            cancelActionButton = document.getElementById("cancelActionButton"),
+            confirmEditButton = document.getElementById("confirmEditButton"),
+            cancelEditButton = document.getElementById("cancelEditButton"),
+            editActionButtonsDiv = document.getElementById("editActionButtons"),
+            normalActionButtonsDiv = document.getElementById("normalActionButtons"),
+            searchLocationButton = document.getElementById("searchLocationButton"),
+            currentLocationButton = document.getElementById("currentLocationButton"),
+            saveButton = document.getElementById("saveButton"),
+            uploadButton = document.getElementById("uploadButton"),
+            clearAllButton = document.getElementById("clearAllButton"),
+            exportCsvButton = document.getElementById("exportCsvButton"),
+            undoButton = document.getElementById("undoButton"),
+            manageProjectsBtn = document.getElementById("manage-projects-btn"),
+            backToMenuBtn = document.getElementById("back-to-menu-btn"),
+            menuBackToSelectionBtn = document.getElementById("menu-back-to-selection-btn"),
+            gotoManageProjectsBtn = document.getElementById("goto-manage-projects-btn"),
+            gotoDashboardsBtn = document.getElementById("goto-dashboards-btn"),
+            gotoIdFieldBtn = document.getElementById("goto-id-field-btn"),
+            idFieldBackToMenuBtn = document.getElementById("id-field-back-to-menu-btn"),
+            editIdFieldBtn = document.getElementById("edit-id-field-btn"),
+            saveIdFieldBtn = document.getElementById("save-id-field-btn"),
+            cancelIdFieldBtn = document.getElementById("cancel-id-field-btn"),
+            idFieldTableBody = document.getElementById("id-field-table-body"),
+            idFieldSearchInput = document.getElementById("id-field-search"),
+            dashboardBackToMenuBtn = document.getElementById("dashboard-back-to-menu-btn"),
+            dashboardProjectSelector = document.getElementById("dashboard-project-selector"),
+            dashboardContent = document.getElementById("dashboard-content"),
+            dashboardPlaceholder = document.getElementById("dashboard-placeholder"),
+            kpiTotalCheckins = document.getElementById("kpi-total-checkins"),
+            kpiUniqueEmployees = document.getElementById("kpi-unique-employees"),
+            dashboardSummaryTable = document.getElementById("dashboard-summary-table"),
+            addProjectForm = document.getElementById("add-project-form"),
+            newProjectNameInput = document.getElementById("new-project-name"),
+            adminProjectList = document.getElementById("admin-project-list"),
+            passwordModal = document.getElementById("passwordModal"),
+            passwordForm = document.getElementById("password-form"),
+            passwordInput = document.getElementById("password-input"),
+            cancelPasswordBtn = document.getElementById("cancel-password-btn");
+        
+        // --- LEAFLET ICONS --- //
+        const redIcon = new L.Icon({ iconUrl: "https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-red.png", shadowUrl: "https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-shadow.png", iconSize: [25, 41], iconAnchor: [12, 41], popupAnchor: [1, -34], shadowSize: [41, 41] }),
+            blueIcon = new L.Icon({ iconUrl: "https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-blue.png", shadowUrl: "https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-shadow.png", iconSize: [25, 41], iconAnchor: [12, 41], popupAnchor: [1, -34], shadowSize: [41, 41] }),
+            yellowIcon = new L.Icon({ iconUrl: "https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-yellow.png", shadowUrl: "https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-shadow.png", iconSize: [25, 41], iconAnchor: [12, 41], popupAnchor: [1, -34], shadowSize: [41, 41] }),
+            greenIcon = new L.Icon({ iconUrl: "https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-green.png", shadowUrl: "https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-shadow.png", iconSize: [25, 41], iconAnchor: [12, 41], popupAnchor: [1, -34], shadowSize: [41, 41] });
+
+        // --- UI & VIEW MANAGEMENT --- //
+        function showView(viewId) {
+            allViews.forEach(v => v.classList.remove("active"));
+            document.getElementById(viewId).classList.add("active");
+             if (viewId === 'dashboard-view') {
+                 setTimeout(() => {
+                     if (dashboardMap) dashboardMap.invalidateSize();
+                 }, 10);
+             }
+        }
+
+        function showSpinner(show) {
+            loadingSpinner.style.display = show ? "flex" : "none";
+        }
+
+        function showMessage(msg, type = "info") {
+            messageBox.textContent = msg;
+            messageBox.className = "fixed top-1 left-1/2 -translate-x-1/2 z-[9999] px-5 py-3 rounded-lg shadow-md text-base font-medium flex items-center gap-2";
+            messageBox.style.display = "flex";
+            const colors = {
+                success: ["bg-green-100", "text-green-800"],
+                error: ["bg-red-100", "text-red-800"],
+                warning: ["bg-yellow-100", "text-yellow-800"],
+                info: ["bg-blue-100", "text-blue-800"]
+            };
+            messageBox.classList.add(...(colors[type] || colors.info));
+            setTimeout(() => { messageBox.style.display = "none"; }, 3000);
+        }
+
+        function showConfirmation(title, message, onConfirm) {
+            modalTitle.textContent = title;
+            modalMessage.innerHTML = message;
+            confirmActionCallback = onConfirm;
+            confirmationModal.style.display = "flex";
+        }
+
+        function hideConfirmation() {
+            confirmationModal.style.display = "none";
+            confirmActionCallback = null;
+        }
+
+        // --- MAP FUNCTIONS --- //
+        function initializeMap() {
+            if (!map) {
+                map = L.map("map").setView([13.7563, 100.5018], 6);
+                L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", { attribution: "© OpenStreetMap contributors" }).addTo(map);
+                permanentMarkers.addTo(map);
+                map.on("click", e => updateCurrentMarker(e.latlng.lat, e.latlng.lng));
+            }
+        }
+        
+        function initializeDashboardMap() {
+            if (!dashboardMap) {
+                dashboardMap = L.map("dashboard-map").setView([13.7563, 100.5018], 5);
+                 L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", { attribution: "© OpenStreetMap contributors" }).addTo(dashboardMap);
+            }
+        }
+
+        function updateCurrentMarker(lat, lng) {
+            if (currentMarker) {
+                currentMarker.setLatLng([lat, lng]);
+            } else {
+                currentMarker = L.marker([lat, lng], { icon: redIcon }).addTo(map);
+            }
+            currentLat = lat;
+            currentLng = lng;
+            document.getElementById("lat").textContent = lat.toFixed(6);
+            document.getElementById("lng").textContent = lng.toFixed(6);
+        }
+
+        function hideCurrentMarker() {
+            if (currentMarker) {
+                map.removeLayer(currentMarker);
+                currentMarker = null;
+            }
+            currentLat = null;
+            currentLng = null;
+            document.getElementById("lat").textContent = "--";
+            document.getElementById("lng").textContent = "--";
+        }
+
+        // --- DATA RENDERING --- //
+        function renderAll() {
+            const allLocations = [...savedLocations, ...pendingLocations];
+            renderPermanentMarkers(allLocations);
+            renderTable(allLocations);
+        }
+
+        function renderPermanentMarkers(locations) {
+            permanentMarkers.clearLayers();
+            permanentMarkersMap = {};
+            locations.forEach(loc => {
+                if (loc.Latitude && loc.Longitude) {
+                    const icon = loc.isPending ? greenIcon : blueIcon;
+                    const marker = L.marker([loc.Latitude, loc.Longitude], { icon: icon }).addTo(permanentMarkers).bindPopup(`<b>Employee:</b> ${loc.EmployeeID}<br><b>Time:</b> ${new Date(loc.Timestamp).toLocaleString("en-US")}`);
+                    permanentMarkersMap[loc.ID] = marker;
+                }
+            });
+        }
+
+        function renderTable(locations) {
+            savedLocationsTableBody.innerHTML = "";
+            if (locations.length === 0) {
+                savedLocationsTableBody.innerHTML = `<tr><td colspan="4" class="py-4 px-4 text-gray-500 text-center">No saved locations yet</td></tr>`;
+                return;
+            }
+            locations.slice().reverse().forEach(loc => {
+                const row = document.createElement("tr");
+                row.dataset.id = loc.ID;
+                
+                const pendingIndicator = loc.isPending ? '<i class="fas fa-clock pending-icon" title="Pending Upload"></i>' : '';
+
+                row.innerHTML = `
+                    <td>${loc.EmployeeID} ${pendingIndicator}</td>
+                    <td>${new Date(loc.Timestamp).toLocaleString("en-US")}</td>
+                    <td><a href="${loc.GoogleMapsLink}" target="_blank" class="text-blue-600 hover:underline text-sm p-1" title="View on Google Maps"><i class="fas fa-map-marker-alt"></i></a></td>
+                    <td class="space-x-2">
+                        <button class="edit-btn bg-yellow-500 hover:bg-yellow-600 text-white p-1 rounded-md text-xs" title="Edit"><i class="fas fa-edit"></i></button>
+                        <button class="delete-btn bg-red-500 hover:bg-red-600 text-white p-1 rounded-md text-xs" title="Delete"><i class="fas fa-trash"></i></button>
+                    </td>
+                    <td class="hidden-col">${loc.ID}</td>`;
+
+                row.querySelector(".edit-btn").addEventListener("click", () => editLocation(loc.ID));
+                row.querySelector(".delete-btn").addEventListener("click", () => deleteLocation(loc.ID, loc.EmployeeID));
+                
+                savedLocationsTableBody.appendChild(row);
+            });
+        }
+
+        // --- API & DATA HANDLING --- //
+        async function apiRequest(url, options = {}) {
+            showSpinner(true);
+            try {
+                const response = await fetch(url, options);
+                if (!response.ok) throw new Error(`Server error: ${response.status}`);
+                const result = await response.json();
+                if (!result.success) throw new Error(result.message || "An unknown error occurred.");
+                return result;
+            } catch (error) {
+                console.error("API Request Failed:", error);
+                showMessage(`Error: ${error.message}`, "error");
+                throw error;
+            } finally {
+                showSpinner(false);
+            }
+        }
+        
+        async function postToAction(payload) {
+            return await apiRequest(WEB_APP_URL, {
+                method: "POST",
+                mode: "cors",
+                cache: "no-cache",
+                headers: { "Content-Type": "text/plain;charset=utf-8" },
+                body: JSON.stringify(payload)
+            });
+        }
+
+        async function fetchProjects(){
+            try{
+                const result = await apiRequest(`${WEB_APP_URL}?action=getProjects`, { method: "GET", mode: "cors" });
+                return result ? result.data : [];
+            } catch(e) {
+                return [];
+            }
+        }
+
+        async function fetchProjectData(projectName){
+            try{
+                const result = await apiRequest(`${WEB_APP_URL}?action=getData&project=${encodeURIComponent(projectName)}`, { method: "GET", mode: "cors" });
+                return result ? result.data : [];
+            } catch(e) {
+                return [];
+            }
+        }
+
+        async function fetchLocations(projectName){
+            try{
+                const data = await fetchProjectData(projectName);
+                savedLocations = data;
+                pendingLocations = []; // Clear pending on fetch
+                renderAll();
+                showMessage(`Data for project '${projectName}' loaded successfully`, "info");
+            } catch(e) {
+                savedLocations = [];
+                pendingLocations = [];
+                renderAll();
+            }
+        }
+        
+        function saveLocationAction(){
+            if(editingId) {
+                confirmEdit();
+                return;
+            }
+            if(currentLat === null) {
+                showMessage("Please select a location on the map before saving", "warning");
+                return;
+            }
+            const empId = employeeIdInput.value.trim();
+            const idRegex = /^\d{6}$/;
+            if(!idRegex.test(empId)) {
+                showMessage("Employee ID must be 6 digits.", "warning");
+                return;
+            }
+
+            // Check for duplicates
+            const isDuplicate = savedLocations.some(loc => String(loc.EmployeeID) === empId) || pendingLocations.some(loc => String(loc.EmployeeID) === empId);
+            if (isDuplicate) {
+                showMessage("This Employee ID is already in use in this project.", "error");
+                return;
+            }
+            
+            const newLoc = {
+                ID: `pending_${Date.now()}`,
+                EmployeeID: empId,
+                Latitude: currentLat,
+                Longitude: currentLng,
+                Timestamp: new Date().toISOString(),
+                GoogleMapsLink: `https://maps.google.com/?q=${currentLat},${currentLng}`,
+                isPending: true
+            };
+
+            pendingLocations.push(newLoc);
+            showMessage(`Saved ${empId}. Please press Upload to send data.`, "success");
+            employeeIdInput.value = "";
+            hideCurrentMarker();
+            renderAll();
+        }
+        
+        function undoLastSave() {
+            if (pendingLocations.length === 0) {
+                showMessage("No recent items to undo", "warning");
+                return;
+            }
+            const undoneLocation = pendingLocations.pop();
+            showMessage(`Undid save for: ${undoneLocation.EmployeeID}`, "info");
+            renderAll();
+        }
+
+        async function uploadPendingLocations() {
+            if (pendingLocations.length === 0) {
+                showMessage("No data to upload", "info");
+                return;
+            }
+
+            const totalToUpload = pendingLocations.length;
+            let successCount = 0;
+
+            for (const loc of pendingLocations) {
+                const payload = {
+                    action: "add",
+                    project: currentProjectName,
+                    data: {
+                        name: loc.EmployeeID,
+                        lat: loc.Latitude,
+                        lng: loc.Longitude
+                    }
+                };
+                
+                try {
+                    const result = await postToAction(payload);
+                    if (result && result.success) {
+                        successCount++;
+                    }
+                } catch (error) {
+                    showMessage(`Upload for ${loc.EmployeeID} failed. Uploaded ${successCount} items.`, "error");
+                    await fetchLocations(currentProjectName);
+                    return; 
+                }
+            }
+
+            showMessage(`Successfully uploaded ${successCount} of ${totalToUpload} items!`, "success");
+            await fetchLocations(currentProjectName);
+        }
+
+        function editLocation(id){
+            // Find the location in EITHER pending or saved arrays
+            let loc = pendingLocations.find(l => String(l.ID) === String(id));
+            if (!loc) {
+                loc = savedLocations.find(l => String(l.ID) === String(id));
+            }
+
+            if (!loc) return;
+
+            if (editingId) cancelEdit(); // Cancel any other ongoing edit
+
+            editingId = id;
+
+            // Handle map markers
+            if (permanentMarkersMap[id]) permanentMarkers.removeLayer(permanentMarkersMap[id]);
+            editingMarker = L.marker([loc.Latitude, loc.Longitude], { icon: yellowIcon, draggable: true }).addTo(map);
+            editingMarker.on("dragend", e => updateCurrentMarker(e.target.getLatLng().lat, e.target.getLatLng().lng));
+            
+            // Update UI
+            map.setView([loc.Latitude, loc.Longitude], map.getZoom() || 14);
+            employeeIdInput.value = loc.EmployeeID;
+            updateCurrentMarker(loc.Latitude, loc.Longitude);
+            editActionButtonsDiv.classList.remove("hidden");
+            normalActionButtonsDiv.classList.add("hidden");
+        }
+        
+        async function confirmEdit(){
+            if(!editingId) return;
+
+            const empId = employeeIdInput.value.trim();
+            const idRegex = /^\d{6}$/;
+            if(!idRegex.test(empId)) {
+                showMessage("Employee ID must be 6 digits.", "warning");
+                return;
+            }
+
+            // Check for duplicates, excluding the item being edited itself
+            const isDuplicate = savedLocations.some(loc => String(loc.EmployeeID) === empId && String(loc.ID) !== String(editingId)) || 
+                                  pendingLocations.some(loc => String(loc.EmployeeID) === empId && String(loc.ID) !== String(editingId));
+            if(isDuplicate) {
+                 showMessage("This Employee ID is already in use by another entry in this project.", "error");
+                 return;
+            }
+
+            // *** NEW LOGIC: Check if it's a pending item or a saved item ***
+            if (String(editingId).startsWith('pending_')) {
+                // It's a pending item, just update it locally
+                const locToUpdate = pendingLocations.find(l => String(l.ID) === String(editingId));
+                if (locToUpdate) {
+                    locToUpdate.EmployeeID = empId;
+                    locToUpdate.Latitude = currentLat;
+                    locToUpdate.Longitude = currentLng;
+                    locToUpdate.Timestamp = new Date().toISOString();
+                    locToUpdate.GoogleMapsLink = `https://maps.google.com/?q=${currentLat},${currentLng}`;
+                }
+                showMessage(`Updated pending item ${empId} successfully`, "success");
+                cancelEdit(); // This will re-render everything
+            } else {
+                // It's a saved item, send update to the server
+                const payload = { action: "update", id: editingId, project: currentProjectName, data: { name: empId, lat: currentLat, lng: currentLng } };
+                try {
+                    const result = await postToAction(payload);
+                    if(result && result.success){
+                        cancelEdit();
+                        await fetchLocations(currentProjectName);
+                    }
+                } catch(error) { /* Handled by apiRequest */ }
+            }
+        }
+
+        function cancelEdit(){
+            if(editingMarker) {
+                map.removeLayer(editingMarker);
+                editingMarker = null;
+            }
+            editingId = null;
+            hideCurrentMarker();
+            employeeIdInput.value = "";
+            editActionButtonsDiv.classList.add("hidden");
+            normalActionButtonsDiv.classList.remove("hidden");
+            renderAll(); // Re-render to restore original markers and table
+        }
+        
+        async function deleteLocation(id, name) {
+            // Find the location in EITHER pending or saved arrays
+            const isPending = String(id).startsWith('pending_');
+            const loc = isPending 
+                ? pendingLocations.find(l => String(l.ID) === String(id))
+                : savedLocations.find(l => String(l.ID) === String(id));
+
+            if (!loc) return;
+
+            showConfirmation("Confirm Deletion", `Are you sure you want to delete the entry for <b>${name}</b>?`, async () => {
+                if (isPending) {
+                    // Just remove from the local pending array
+                    pendingLocations = pendingLocations.filter(p => String(p.ID) !== String(id));
+                    renderAll();
+                    showMessage("Removed pending entry", "info");
+                } else {
+                    // Send delete request to the server
+                    const payload = { action: "delete", project: currentProjectName, id: id };
+                    try {
+                        const result = await postToAction(payload);
+                        if (result && result.success) await fetchLocations(currentProjectName);
+                    } catch (error) { /* Handled */ }
+                }
+                hideConfirmation();
+            });
+        }
+        
+        function requestClearAll() {
+            if (savedLocations.length === 0 && pendingLocations.length === 0) return showMessage("No data to clear", "warning");
+            
+            let message = `Are you sure you want to delete all <b>saved</b> data for project <b>${currentProjectName}</b>?`;
+            if (pendingLocations.length > 0) {
+                 message += `<br><br>This will also clear ${pendingLocations.length} <b>pending</b> items.`;
+            }
+              message += `<br><br><b class='text-red-600'>This action cannot be undone.</b>`;
+
+
+            showConfirmation("Confirm Clear All", message, async () => {
+                pendingLocations = [];
+                const payload = { action: "deleteAll", project: currentProjectName };
+                try {
+                    const result = await postToAction(payload);
+                    if (result && result.success) await fetchLocations(currentProjectName);
+                } catch (error) { renderAll(); }
+            });
+        }
+        
+        // --- LOCATION & SEARCH --- //
+        function getCurrentLocation(){
+            if(editingId) cancelEdit();
+            navigator.geolocation.getCurrentPosition(
+                pos => {
+                    updateCurrentMarker(pos.coords.latitude, pos.coords.longitude);
+                    map.setView([pos.coords.latitude, pos.coords.longitude], 15);
+                },
+                () => showMessage("Could not get current location", "error"),
+                { enableHighAccuracy: true }
+            );
+        }
+
+        function searchLocation(query){
+            if(!query.trim()) return;
+            if(editingId) cancelEdit();
+            showSpinner(true);
+            fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}&limit=5`)
+                .then(res => res.json())
+                .then(data => {
+                    if (data && data.length > 0) {
+                        const { lat, lon, display_name } = data[0];
+                        updateCurrentMarker(parseFloat(lat), parseFloat(lon));
+                        map.setView([lat, lon], 13);
+                        locationSearchInput.value = display_name;
+                        hideAutocomplete();
+                    } else {
+                        showMessage("Location not found", "warning");
+                    }
+                })
+                .catch(err => {
+                    console.error("Search Error:", err);
+                    showMessage("Error during search", "error");
+                })
+                .finally(() => showSpinner(false));
+        }
+        
+        // --- UTILITY & PROJECT MANAGEMENT --- //
+        function exportToCSV() {
+            const allLocations = [...savedLocations, ...pendingLocations];
+            if (allLocations.length === 0) return showMessage("No data to export!", "warning");
+            const headers = "EmployeeID,Latitude,Longitude,Timestamp,GoogleMapsLink,Status\n";
+            let csvContent = "data:text/csv;charset=utf-8," + headers;
+            allLocations.forEach(loc => {
+                const status = loc.isPending ? "Pending Upload" : "Saved";
+                const row = [loc.EmployeeID, loc.Latitude, loc.Longitude, new Date(loc.Timestamp).toISOString(), loc.GoogleMapsLink, status].join(",");
+                csvContent += row + "\n";
+            });
+            const link = document.createElement("a");
+            link.href = encodeURI(csvContent);
+            link.download = `${currentProjectName}_locations.csv`;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+        
+        function selectProject(projectName) {
+            currentProjectName = projectName;
+            trackerTitle.textContent = projectName;
+            showView("tracker-view");
+            initializeMap();
+            fetchLocations(projectName);
+        }
+        
+        function renderProjectCards(projects) {
+            projectList.innerHTML = "";
+            if(projects.length === 0){
+                projectList.innerHTML = `<p class="col-span-full text-center text-gray-500">No projects found. Try adding one in Manage Projects.</p>`;
+                return;
+            }
+            projects.forEach(p => {
+                const card = document.createElement("div");
+                card.className = "project-card p-6 text-center cursor-pointer";
+                card.innerHTML = `<div class="text-3xl mb-2 text-blue-500"><i class="fas fa-folder-open"></i></div><h3 class="text-lg font-semibold">${p}</h3>`;
+                card.addEventListener("click", () => selectProject(p));
+                projectList.appendChild(card);
+            });
+        }
+        
+        function renderAdminProjectList(projects) {
+            adminProjectList.innerHTML = "";
+            if(projects.length === 0){
+                adminProjectList.innerHTML = `<p class="text-center text-gray-500">No projects yet.</p>`;
+                return;
+            }
+            projects.forEach(p => {
+                const item = document.createElement("div");
+                item.className = "flex justify-between items-center p-2 border rounded-md bg-gray-50";
+                item.innerHTML = `<span>${p}</span><button class="btn btn-danger text-xs p-1"><i class="fas fa-trash"></i></button>`;
+                item.querySelector("button").addEventListener("click", () => showConfirmation(`Confirm Project Deletion`, `Are you sure you want to delete the project <b>${p}</b>? <br><b class='text-red-600'>All associated data will be deleted and cannot be recovered.</b>`, async () => {
+                    await postToAction({ action: "deleteProject", projectName: p });
+                    await loadProjectsAndRender();
+                    hideConfirmation();
+                }));
+                adminProjectList.appendChild(item);
+            });
+        }
+
+        async function loadProjectsAndRender(){
+            try {
+                const projects = await fetchProjects();
+                renderProjectCards(projects);
+                renderAdminProjectList(projects);
+            } catch(e){
+                console.error("Failed to load projects:", e);
+                renderProjectCards([]);
+                renderAdminProjectList([]);
+            }
+        }
+        
+        // --- ID FIELD FUNCTIONS --- //
+        function renderIdFieldTable(data = idFieldData) {
+            idFieldTableBody.innerHTML = '';
+            data.forEach(person => {
+                const row = document.createElement('tr');
+                const isEditing = isIdFieldEditing;
+                row.innerHTML = `
+                    <td>${person.id}</td>
+                    <td>
+                        ${isEditing 
+                            ? `<input type="text" value="${person.name}" data-id="${person.id}" class="w-full bg-blue-50">`
+                            : `<span>${person.name}</span>`
+                        }
+                    </td>
+                `;
+                idFieldTableBody.appendChild(row);
+            });
+        }
+
+        function toggleIdFieldEdit(isEditing) {
+            isIdFieldEditing = isEditing;
+            idFieldSearchInput.value = '';
+            editIdFieldBtn.classList.toggle('hidden', isEditing);
+            saveIdFieldBtn.classList.toggle('hidden', !isEditing);
+            renderIdFieldTable();
+        }
+        
+        // --- DASHBOARD FUNCTIONS --- //
+        async function initializeDashboardView() {
+            initializeDashboardMap();
+            const projects = await fetchProjects();
+            dashboardProjectSelector.innerHTML = '<option value="">-- Select a Project --</option>';
+            projects.forEach(p => {
+                const option = document.createElement('option');
+                option.value = p;
+                option.textContent = p;
+                dashboardProjectSelector.appendChild(option);
+            });
+            dashboardContent.classList.add('hidden');
+            dashboardPlaceholder.classList.remove('hidden');
+        }
+
+        async function updateDashboard(projectName) {
+            if (!projectName) {
+                dashboardContent.classList.add('hidden');
+                dashboardPlaceholder.classList.remove('hidden');
+                return;
+            }
+            dashboardPlaceholder.classList.add('hidden');
+            
+            const data = await fetchProjectData(projectName);
+            
+            // Calculate KPIs
+            kpiTotalCheckins.textContent = data.length;
+            const uniqueEmployees = new Set(data.map(d => String(d.EmployeeID).substring(0, 3)));
+            kpiUniqueEmployees.textContent = uniqueEmployees.size;
+
+            // Update Map
+            if(dashboardMap) {
+                dashboardMap.eachLayer(layer => {
+                    if (layer instanceof L.Marker) {
+                        dashboardMap.removeLayer(layer);
+                    }
+                });
+                if (data.length > 0) {
+                    const markers = L.featureGroup();
+                    data.forEach(loc => {
+                        if (loc.Latitude && loc.Longitude) {
+                           const marker = L.marker([loc.Latitude, loc.Longitude]).addTo(markers);
+                           marker.bindPopup(`<b>${loc.EmployeeID}</b><br>${new Date(loc.Timestamp).toLocaleString("en-US")}`);
+                        }
+                    });
+                    markers.addTo(dashboardMap);
+                    dashboardMap.fitBounds(markers.getBounds().pad(0.1));
+                }
+            }
+            
+            // Update Employee Summary Table
+            dashboardSummaryTable.innerHTML = "";
+            const employeeSummary = {};
+
+            data.forEach(loc => {
+                const prefix = String(loc.EmployeeID).substring(0, 3);
+                if (employeeSummary[prefix]) {
+                    employeeSummary[prefix].count++;
+                } else {
+                    const person = idFieldData.find(p => String(p.id) === prefix);
+                    const name = person ? person.name : 'Unknown';
+                    employeeSummary[prefix] = { count: 1, name: name };
+                }
+            });
+
+            if (Object.keys(employeeSummary).length > 0) {
+                 for (const prefix in employeeSummary) {
+                    const summary = employeeSummary[prefix];
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
+                        <td>${prefix}</td>
+                        <td>${summary.name}</td>
+                        <td class="text-center">${summary.count}</td>
+                    `;
+                    dashboardSummaryTable.appendChild(row);
+                }
+            } else {
+                dashboardSummaryTable.innerHTML = `<tr><td colspan="3" class="text-center text-gray-500">No summary data.</td></tr>`;
+            }
+
+
+            dashboardContent.classList.remove('hidden');
+            setTimeout(() => dashboardMap.invalidateSize(), 10);
+        }
+
+
+        // --- AUTOCOMPLETE --- //
+        let autocompleteTimeout;
+        function setupAutocomplete() {
+            locationSearchInput.addEventListener("input", e => {
+                const query = e.target.value.trim();
+                clearSearchIcon.style.display = query.length > 0 ? "block" : "none";
+                clearTimeout(autocompleteTimeout);
+                if (query.length > 2) { 
+                    autocompleteTimeout = setTimeout(() => {
+                        fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}&limit=5&countrycodes=th`)
+                            .then(res => res.json())
+                            .then(data => showAutocomplete(data));
+                    }, 300);
+                } else {
+                    hideAutocomplete();
+                }
+            });
+        }
+        function showAutocomplete(items) {
+            autocompleteList.innerHTML = "";
+            if (!items || items.length === 0) {
+                hideAutocomplete();
+                return;
+            }
+            items.forEach(item => {
+                const div = document.createElement("div");
+                div.className = "p-2 hover:bg-gray-100 cursor-pointer text-sm";
+                div.textContent = item.display_name;
+                div.addEventListener("click", () => searchLocation(item.display_name));
+                autocompleteList.appendChild(div);
+            });
+            autocompleteList.classList.remove("hidden");
+        }
+        function hideAutocomplete() {
+            autocompleteList.classList.add("hidden");
+        }
+        
+        // --- EVENT LISTENERS SETUP --- //
+        function setupEventListeners(){
+            saveButton.addEventListener("click", saveLocationAction);
+            uploadButton.addEventListener("click", uploadPendingLocations);
+            clearAllButton.addEventListener("click", requestClearAll);
+            exportCsvButton.addEventListener("click", exportToCSV);
+            undoButton.addEventListener("click", undoLastSave);
+            
+            confirmEditButton.addEventListener("click", confirmEdit);
+            cancelEditButton.addEventListener("click", cancelEdit);
+
+            // Modal Buttons
+            confirmActionButton.addEventListener("click", () => {
+                if (typeof confirmActionCallback === 'function') {
+                    confirmActionCallback();
+                }
+            });
+            cancelActionButton.addEventListener("click", hideConfirmation);
+
+            currentLocationButton.addEventListener("click", getCurrentLocation);
+            searchLocationButton.addEventListener("click", () => searchLocation(locationSearchInput.value));
+            locationSearchInput.addEventListener("keydown", e => {
+                if (e.key === "Enter") {
+                    e.preventDefault();
+                    searchLocation(locationSearchInput.value);
+                }
+            });
+            clearSearchIcon.addEventListener("click", () => {
+                locationSearchInput.value = "";
+                clearSearchIcon.style.display = "none";
+                hideAutocomplete();
+                locationSearchInput.focus();
+            });
+            document.addEventListener("click", e => {
+                if (!e.target.closest(".search-wrapper")) hideAutocomplete();
+            });
+            homeButton.addEventListener("click", () => {
+                showView("project-selection-view");
+                loadProjectsAndRender();
+            });
+            
+            // --- Admin Navigation --- //
+            manageProjectsBtn.addEventListener("click", () => {
+                passwordModal.style.display = "flex";
+                passwordInput.focus();
+            });
+            menuBackToSelectionBtn.addEventListener("click", () => {
+                showView("project-selection-view");
+            });
+            gotoManageProjectsBtn.addEventListener("click", () => {
+                showView("admin-view");
+            });
+            gotoDashboardsBtn.addEventListener("click", () => {
+                initializeDashboardView();
+                showView("dashboard-view");
+            });
+            gotoIdFieldBtn.addEventListener("click", () => {
+                renderIdFieldTable();
+                showView("id-field-view");
+            });
+            idFieldBackToMenuBtn.addEventListener("click", () => {
+                showView("admin-menu-view");
+            });
+            dashboardBackToMenuBtn.addEventListener("click", () => {
+                showView("admin-menu-view");
+            });
+            backToMenuBtn.addEventListener("click", () => {
+                showView("admin-menu-view");
+            });
+            dashboardProjectSelector.addEventListener('change', (e) => {
+                updateDashboard(e.target.value);
+            });
+            
+            // --- ID Field Listeners --- //
+            editIdFieldBtn.addEventListener('click', () => toggleIdFieldEdit(true));
+            saveIdFieldBtn.addEventListener('click', () => {
+                const inputs = idFieldTableBody.querySelectorAll('input[type="text"]');
+                inputs.forEach(input => {
+                    const idToUpdate = input.dataset.id;
+                    const person = idFieldData.find(p => String(p.id) === idToUpdate);
+                    if (person) {
+                        person.name = input.value;
+                    }
+                });
+                toggleIdFieldEdit(false);
+                showMessage("Names updated successfully.", "success");
+            });
+            idFieldSearchInput.addEventListener('input', (e) => {
+                const searchTerm = e.target.value.toLowerCase();
+                const filteredData = idFieldData.filter(person => {
+                    return String(person.id).includes(searchTerm) || person.name.toLowerCase().includes(searchTerm);
+                });
+                renderIdFieldTable(filteredData);
+            });
+
+
+            addProjectForm.addEventListener("submit", async e => {
+                e.preventDefault();
+                const newName = newProjectNameInput.value.trim();
+                if (newName) {
+                    try {
+                        await postToAction({ action: "addProject", projectName: newName });
+                        newProjectNameInput.value = "";
+                        await loadProjectsAndRender();
+                    } catch(err) { /* Handled */ }
+                }
+            });
+            passwordForm.addEventListener("submit", e => {
+                e.preventDefault();
+                if (passwordInput.value === "SIM") { 
+                    passwordModal.style.display = "none";
+                    showView("admin-menu-view");
+                } else {
+                    showMessage("Incorrect password", "error");
+                    passwordInput.select();
+                }
+                passwordInput.value = "";
+            });
+            cancelPasswordBtn.addEventListener("click", () => {
+                passwordModal.style.display = "none";
+                passwordInput.value = "";
+            });
+            setupAutocomplete();
+        }
+        
+        // --- APP INITIALIZATION --- //
+        window.onload = () => {
+            setupEventListeners();
+            loadProjectsAndRender();
+            showView("project-selection-view");
+        };
+    </script>
+</body>
+</html>
