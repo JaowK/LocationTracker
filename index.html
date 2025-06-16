@@ -31,7 +31,7 @@
         body { display: flex; align-items: flex-start; justify-content: center; padding: 1rem; }
         .main-card { 
             background-color: white; 
-            border-radius: 0.75rem; 
+            border-radius: 1rem; /* Increased */
             box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.05);
             transition: all 0.2s ease-in-out; 
             width: 100%;
@@ -39,7 +39,7 @@
         .project-card {
             background-color: white; 
             border: 1px solid var(--medium-gray);
-            border-radius: 0.75rem; 
+            border-radius: 1rem; /* Increased */
             box-shadow: 0 1px 2px 0 rgba(0,0,0,0.05);
             transition: all 0.2s ease-in-out;
         }
@@ -48,15 +48,15 @@
             box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
             border-color: var(--primary-color);
         }
-        #map, #dashboard-map { height: 250px; width: 100%; border-radius: 0.5rem; overflow: hidden; z-index: 10; }
-        #messageBox, #loadingSpinner { position: fixed; top: 1rem; left: 50%; transform: translateX(-50%); z-index: 9999; padding: 0.75rem 1.25rem; border-radius: 0.5rem; box-shadow: 0 4px 6px rgba(0,0,0,0.1); font-size: 1rem; font-weight: 500; display: flex; align-items: center; gap: 0.5rem; }
+        #map, #dashboard-map { height: 250px; width: 100%; border-radius: 0.75rem; /* Increased */ overflow: hidden; z-index: 10; }
+        #messageBox, #loadingSpinner { position: fixed; top: 1rem; left: 50%; transform: translateX(-50%); z-index: 9999; padding: 0.75rem 1.25rem; border-radius: 1rem; /* Increased */ box-shadow: 0 4px 6px rgba(0,0,0,0.1); font-size: 1rem; font-weight: 500; display: flex; align-items: center; gap: 0.5rem; }
         #loadingSpinner { display: none; background-color: #111827; color: white; }
         #messageBox { display: none; }
         .modal-overlay { position: fixed; inset: 0; background-color: rgba(17, 24, 39, 0.6); display: none; align-items: center; justify-content: center; z-index: 9998; backdrop-filter: blur(4px); }
-        .modal-content { background-color: white; border-radius: 0.75rem; padding: 1.5rem; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1), 0 10px 10px -5px rgba(0,0,0,0.04); max-width: 400px; width: 90%; text-align: center; }
+        .modal-content { background-color: white; border-radius: 1rem; /* Increased */ padding: 1.5rem; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1), 0 10px 10px -5px rgba(0,0,0,0.04); max-width: 400px; width: 90%; text-align: center; }
         input[type="text"], input[type="password"], select { 
             width: 100%; padding: 0.6rem 0.75rem; font-size: 0.875rem; 
-            border: 1px solid #D1D5DB; border-radius: 0.375rem; 
+            border: 1px solid #D1D5DB; border-radius: 0.75rem; /* Increased */
             transition: border-color 0.2s, box-shadow 0.2s;
             background-color: white;
         }
@@ -72,7 +72,7 @@
         }
         .btn { 
             padding: 0.6rem 1rem; font-size: 0.875rem; font-weight: 500;
-            border-radius: 0.375rem; border: 1px solid transparent; 
+            border-radius: 0.75rem; /* Increased */ border: 1px solid transparent; 
             transition: all 0.2s ease-in-out; 
             display: flex; align-items: center; justify-content: center; gap: 0.5rem; cursor: pointer;
             box-shadow: 0 1px 2px 0 rgba(0,0,0,0.05);
@@ -91,9 +91,15 @@
         th { font-weight: 600; color: #374151; }
         td { color: #4B5563; word-break: break-word; }
         tr:last-child td { border-bottom: none; }
-        .table-scroll { max-height: calc(100vh - 20rem); overflow-y: auto; border: 1px solid var(--medium-gray); border-radius: 0.5rem; }
+        .table-scroll { max-height: calc(100vh - 20rem); overflow-y: auto; border: 1px solid var(--medium-gray); border-radius: 1rem; /* Increased */ }
         .hidden-col { display: none; }
         .pending-icon { color: var(--warning-color); margin-left: 4px; }
+        
+        /* Custom Admin Menu Button Color */
+        #admin-menu-view .btn-primary {
+            background-color: #5087f7;
+            border-color: #5087f7;
+        }
     </style>
 </head>
 <body>
@@ -101,11 +107,32 @@
         <!-- View 1: Project Selection -->
         <div id="project-selection-view" class="app-view">
             <div class="main-card p-4 sm:p-6">
-                <div class="flex justify-between items-center mb-6">
-                    <h2 class="text-xl sm:text-2xl font-bold text-gray-800">Projects</h2>
+                <!-- Main Title -->
+                <div class="text-center mb-4">
+                    <h1 class="text-2xl sm:text-3xl font-bold flex items-center justify-center gap-2" style="color: #5087f7;">
+                        <i class="fas fa-map-marker-alt"></i>
+                        <span>Location Tracker</span>
+                    </h1>
+                </div>
+                
+                <!-- Search and Manage Section -->
+                <div class="mb-6">
+                    <div class="relative">
+                        <input id="project-search-input" type="text" placeholder="Search Projects..." class="w-full !pl-10 p-2 border border-gray-300 rounded-lg">
+                        <i class="fas fa-search absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"></i>
+                    </div>
+                </div>
+                
+                <!-- Subtitle and Count Section -->
+                <div class="flex justify-between items-center mb-4">
+                    <div>
+                        <p id="project-count" class="text-sm text-gray-500 font-semibold">All Projects 0</p>
+                    </div>
                     <button id="manage-projects-btn" class="btn btn-secondary btn-icon text-sm" title="Manage Projects"><i class="fas fa-cog"></i></button>
                 </div>
-                <div id="project-list" class="grid grid-cols-2 gap-4">
+
+                <!-- Project List -->
+                <div id="project-list" class="flex flex-col space-y-3">
                     <!-- Project cards will be injected here -->
                 </div>
             </div>
@@ -194,11 +221,11 @@
                 <div id="dashboard-content" class="hidden space-y-6">
                     <!-- KPIs -->
                     <div class="grid grid-cols-2 gap-4">
-                        <div class="bg-gray-50 p-4 rounded-lg text-center">
+                        <div class="bg-gray-50 p-4 rounded-xl text-center">
                             <p class="text-sm text-gray-500">Total Check-ins</p>
                             <p id="kpi-total-checkins" class="text-2xl font-bold text-primary-color">0</p>
                         </div>
-                        <div class="bg-gray-50 p-4 rounded-lg text-center">
+                        <div class="bg-gray-50 p-4 rounded-xl text-center">
                             <p class="text-sm text-gray-500">Employees</p>
                             <p id="kpi-unique-employees" class="text-2xl font-bold text-primary-color">0</p>
                         </div>
@@ -242,11 +269,11 @@
                     <div style="width: 40px;"></div> <!-- Spacer -->
                 </div>
                 <div id="map"></div>
-                <div class="p-3 rounded-lg bg-blue-50 border border-blue-200">
+                <div class="p-3 rounded-xl bg-blue-50 border border-blue-200">
                     <div class="flex justify-center items-center gap-4 text-xs font-medium text-gray-700">
                         <p>Lat: <span id="lat" class="font-bold text-blue-600">--</span></p>
                         <p>Lng: <span id="lng" class="font-bold text-blue-600">--</span></p>
-                        <button id="currentLocationButton" class="p-2 rounded-md bg-purple-500 text-white hover:bg-purple-600 transition" title="Use Current Location"><i class="fas fa-map-marker-alt"></i></button>
+                        <button id="currentLocationButton" class="p-2 rounded-lg bg-purple-500 text-white hover:bg-purple-600 transition" title="Use Current Location"><i class="fas fa-map-marker-alt"></i></button>
                     </div>
                 </div>
                 <div class="space-y-3">
@@ -257,7 +284,7 @@
                             <div class="relative w-full">
                                 <input id="locationSearchInput" type="text" placeholder="e.g., Bangkok" autocomplete="off" class="!rounded-r-none" />
                                 <i id="clearSearchIcon" class="fas fa-times absolute z-10 top-1/2 right-3 -translate-y-1/2 cursor-pointer text-gray-400" style="display:none;"></i>
-                                <div id="autocompleteList" class="absolute top-full left-0 right-0 bg-white border z-50 rounded-b-md hidden"></div>
+                                <div id="autocompleteList" class="absolute top-full left-0 right-0 bg-white border z-50 rounded-b-lg hidden"></div>
                             </div>
                             <button id="searchLocationButton" class="btn btn-secondary btn-icon !rounded-l-none -ml-px">
                                 <i class="fas fa-search"></i>
@@ -273,7 +300,7 @@
                 </div>
                 <div id="editActionButtons" class="action-row hidden"><button id="confirmEditButton" class="btn btn-warning">Save Edit</button><button id="cancelEditButton" class="btn btn-secondary">Cancel</button></div>
                 <div class="relative mt-4">
-                    <div class="flex justify-between items-center bg-gray-50 p-3 rounded-t-lg border-b border-gray-200">
+                    <div class="flex justify-between items-center bg-gray-50 p-3 rounded-t-xl border-b border-gray-200">
                         <h4 class="font-semibold text-sm">Saved Locations</h4>
                         <button id="clearAllButton" class="text-xs btn btn-danger p-1">Clear All</button>
                     </div>
@@ -304,6 +331,7 @@
         let currentProjectName = null;
         let confirmActionCallback = null; // To hold the confirmation callback
         let isIdFieldEditing = false;
+        let allProjects = []; // Store all fetched projects
         let idFieldData = [
             {id: 345, name: 'สุมาลี มะโนสงค์'},
             {id: 399, name: 'ปัญจพล ดีหมั่น'},
@@ -335,6 +363,8 @@
             trackerView = document.getElementById("tracker-view"),
             adminView = document.getElementById("admin-view"),
             projectList = document.getElementById("project-list"),
+            projectCount = document.getElementById("project-count"),
+            projectSearchInput = document.getElementById("project-search-input"),
             homeButton = document.getElementById("home-button"),
             trackerTitle = document.getElementById("tracker-title"),
             loadingSpinner = document.getElementById("loadingSpinner"),
@@ -516,8 +546,8 @@
                     <td>${new Date(loc.Timestamp).toLocaleString("en-US")}</td>
                     <td><a href="${loc.GoogleMapsLink}" target="_blank" class="text-blue-600 hover:underline text-sm p-1" title="View on Google Maps"><i class="fas fa-map-marker-alt"></i></a></td>
                     <td class="space-x-2">
-                        <button class="edit-btn bg-yellow-500 hover:bg-yellow-600 text-white p-1 rounded-md text-xs" title="Edit"><i class="fas fa-edit"></i></button>
-                        <button class="delete-btn bg-red-500 hover:bg-red-600 text-white p-1 rounded-md text-xs" title="Delete"><i class="fas fa-trash"></i></button>
+                        <button class="edit-btn bg-yellow-500 hover:bg-yellow-600 text-white p-1 rounded-lg text-xs" title="Edit"><i class="fas fa-edit"></i></button>
+                        <button class="delete-btn bg-red-500 hover:bg-red-600 text-white p-1 rounded-lg text-xs" title="Delete"><i class="fas fa-trash"></i></button>
                     </td>
                     <td class="hidden-col">${loc.ID}</td>`;
 
@@ -868,16 +898,22 @@
             fetchLocations(projectName);
         }
         
-        function renderProjectCards(projects) {
+        function renderProjectCards(projectsToRender) {
             projectList.innerHTML = "";
-            if(projects.length === 0){
-                projectList.innerHTML = `<p class="col-span-full text-center text-gray-500">No projects found. Try adding one in Manage Projects.</p>`;
+            projectCount.textContent = `All Projects ${projectsToRender.length}`;
+
+            if(projectsToRender.length === 0){
+                projectList.innerHTML = `<p class="text-center text-gray-500 py-4">No projects found.</p>`;
                 return;
             }
-            projects.forEach(p => {
+            projectsToRender.forEach(p => {
                 const card = document.createElement("div");
-                card.className = "project-card p-6 text-center cursor-pointer";
-                card.innerHTML = `<div class="text-3xl mb-2 text-blue-500"><i class="fas fa-folder-open"></i></div><h3 class="text-lg font-semibold">${p}</h3>`;
+                card.className = "project-card p-4 flex items-center space-x-4 cursor-pointer"; 
+                card.innerHTML = `
+                    <div class="text-3xl text-blue-500"><i class="fas fa-folder-open"></i></div>
+                    <h3 class="text-md font-semibold text-gray-700 flex-grow">${p}</h3>
+                    <i class="fas fa-chevron-right text-gray-400"></i>
+                `;
                 card.addEventListener("click", () => selectProject(p));
                 projectList.appendChild(card);
             });
@@ -934,7 +970,7 @@
             }
             projects.forEach(p => {
                 const item = document.createElement("div");
-                item.className = "flex justify-between items-center p-2 border rounded-md bg-gray-50";
+                item.className = "flex justify-between items-center p-2 border rounded-lg bg-gray-50";
                 item.innerHTML = `
                     <span class="flex-grow">${p}</span>
                     <div class="flex items-center space-x-1 flex-shrink-0">
@@ -956,8 +992,9 @@
         async function loadProjectsAndRender(){
             try {
                 const projects = await fetchProjects();
-                renderProjectCards(projects);
-                renderAdminProjectList(projects);
+                allProjects = projects; // Store the full list
+                renderProjectCards(allProjects); // Render all projects initially
+                renderAdminProjectList(allProjects);
             } catch(e){
                 console.error("Failed to load projects:", e);
                 renderProjectCards([]);
@@ -1270,6 +1307,13 @@
 
             // New Listener for Rename Modal
             cancelRenameBtn.addEventListener("click", hideRenameModal);
+
+            // New Listener for Project Search
+            projectSearchInput.addEventListener('input', (e) => {
+                const searchTerm = e.target.value.toLowerCase();
+                const filteredProjects = allProjects.filter(p => p.toLowerCase().includes(searchTerm));
+                renderProjectCards(filteredProjects);
+            });
 
             setupAutocomplete();
         }
