@@ -287,12 +287,15 @@
     <div id="passwordModal" class="modal-overlay"><div class="modal-content"><h4 class="text-xl font-bold mb-4">Please enter password</h4><form id="password-form" class="space-y-4"><input id="password-input" type="password" class="w-full" required><div class="flex justify-end gap-2"><button type="button" id="cancel-password-btn" class="btn btn-secondary">Cancel</button><button type="submit" class="btn btn-primary">Confirm</button></div></form></div></div>
     <div id="confirmationModal" class="modal-overlay"><div class="modal-content"><h4 id="modalTitle" class="text-xl font-bold mb-4"></h4><p id="modalMessage" class="text-gray-700 mb-6"></p><div class="flex justify-center gap-4"><button id="confirmActionButton" class="btn btn-danger">Confirm</button><button id="cancelActionButton" class="btn btn-secondary">Cancel</button></div></div></div>
     
+    <!-- NEW: Rename Project Modal -->
+    <div id="renameModal" class="modal-overlay"><div class="modal-content"><h4 id="renameModalTitle" class="text-xl font-bold mb-4">Rename Project</h4><form id="rename-form" class="space-y-4"><input id="rename-input" type="text" class="w-full" required><div class="flex justify-end gap-2"><button type="button" id="cancel-rename-btn" class="btn btn-secondary">Cancel</button><button type="submit" class="btn btn-primary">Rename</button></div></form></div></div>
+
     <div id="messageBox"></div><div id="loadingSpinner"><i class="fas fa-spinner fa-spin"></i><span>Loading...</span></div>
     
     <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
     <script>
         // --- CONSTANTS AND GLOBAL VARIABLES --- //
-        const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbxj2nYO6Tm3sGMC4bevVZGRVZNdGn5NLScRXGYsp2ENlsPKZexjwC5CpiXtSGO4GTgoxg/exec';
+        const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbwVdrge0oVSLcXWG9mNR4joc1lbsrg1KJZMW4HJzsXrwKIlxB1-7tf8M-GN31jcO1nEAQ/exec'; 
         
         let map, currentMarker = null, permanentMarkers = L.layerGroup(), permanentMarkersMap = {}, currentLat = null, currentLng = null, editingId = null, editingMarker = null;
         let dashboardMap;
@@ -302,24 +305,24 @@
         let confirmActionCallback = null; // To hold the confirmation callback
         let isIdFieldEditing = false;
         let idFieldData = [
-            {id: 345, name: 'Sumalee Manosong'},
-            {id: 399, name: 'Panjapon Deemun'},
-            {id: 450, name: 'Nutra Bislimin'},
-            {id: 452, name: 'La-ongdao Sriapai'},
-            {id: 456, name: 'Piyamart Kanha'},
-            {id: 766, name: 'Porntip Promngam'},
-            {id: 781, name: 'Thanyarat Kasemrat'},
-            {id: 790, name: 'Darunee Sripen'},
-            {id: 797, name: 'Sutheera Pimat'},
-            {id: 839, name: 'Ampa Wunmaesod'},
-            {id: 855, name: 'Panisara Phutongchai'},
-            {id: 856, name: 'Pornwadee Boonkaewsue'},
-            {id: 857, name: 'Sawanya Jariya'},
-            {id: 861, name: 'Pornpimon Phasuk'},
-            {id: 862, name: 'Teeraporn Meengao'},
-            {id: 863, name: 'Premruethai Boonyok'},
-            {id: 864, name: 'Arisa Sukhom'},
-            {id: 865, name: 'Sukanyarat Kotchaphum'}
+            {id: 345, name: 'สุมาลี มะโนสงค์'},
+            {id: 399, name: 'ปัญจพล ดีหมั่น'},
+            {id: 450, name: 'นุตระ บิสลิมิน'},
+            {id: 452, name: 'ละอองดาว ศรีอภัย'},
+            {id: 456, name: 'ปิยะมาศ กัณหา'},
+            {id: 766, name: 'พรทิพย์ พรหมงาม'},
+            {id: 781, name: 'ธัญญรัตน์ เกษมราช'},
+            {id: 790, name: 'ดารุณี ศรีเพ็ญ'},
+            {id: 797, name: 'สุธีรา พิมพัฒน์'},
+            {id: 839, name: 'อำภา วุ่นแม่สอด'},
+            {id: 855, name: 'ปาณิศรา ภูต้องใจ'},
+            {id: 856, name: 'พรวดี บุญแก้วเสือ'},
+            {id: 857, name: 'สวรรยา จาริยะ'},
+            {id: 861, name: 'พรพิมล ผาสุก'},
+            {id: 862, name: 'ธีราภรณ์ มีเหง้า'},
+            {id: 863, name: 'เปรมฤทัย บุญยก'},
+            {id: 864, name: 'อริสา สุกหอม'},
+            {id: 865, name: 'สุกัญญารัตน์ คชภูมิ'}
         ];
 
 
@@ -382,7 +385,13 @@
             passwordModal = document.getElementById("passwordModal"),
             passwordForm = document.getElementById("password-form"),
             passwordInput = document.getElementById("password-input"),
-            cancelPasswordBtn = document.getElementById("cancel-password-btn");
+            cancelPasswordBtn = document.getElementById("cancel-password-btn"),
+            // New selectors for Rename Modal
+            renameModal = document.getElementById("renameModal"),
+            renameModalTitle = document.getElementById("renameModalTitle"),
+            renameForm = document.getElementById("rename-form"),
+            renameInput = document.getElementById("rename-input"),
+            cancelRenameBtn = document.getElementById("cancel-rename-btn");
         
         // --- LEAFLET ICONS --- //
         const redIcon = new L.Icon({ iconUrl: "https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-red.png", shadowUrl: "https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-shadow.png", iconSize: [25, 41], iconAnchor: [12, 41], popupAnchor: [1, -34], shadowSize: [41, 41] }),
@@ -837,7 +846,7 @@
             const allLocations = [...savedLocations, ...pendingLocations];
             if (allLocations.length === 0) return showMessage("No data to export!", "warning");
             const headers = "EmployeeID,Latitude,Longitude,Timestamp,GoogleMapsLink,Status\n";
-            let csvContent = "data:text/csv;charset=utf-8," + headers;
+            let csvContent = "data:text/csv;charset=utf-8,\uFEFF" + headers;
             allLocations.forEach(loc => {
                 const status = loc.isPending ? "Pending Upload" : "Saved";
                 const row = [loc.EmployeeID, loc.Latitude, loc.Longitude, new Date(loc.Timestamp).toISOString(), loc.GoogleMapsLink, status].join(",");
@@ -874,6 +883,49 @@
             });
         }
         
+        // NEW: Show Rename Modal
+        function showRenameModal(oldName) {
+            renameModalTitle.textContent = `Rename Project '${oldName}'`;
+            renameInput.value = oldName;
+            renameModal.style.display = "flex";
+            renameInput.focus();
+            renameInput.select();
+
+            renameForm.onsubmit = async (e) => {
+                e.preventDefault();
+                const newName = renameInput.value.trim();
+
+                if (!newName || newName === "") {
+                    showMessage("New name cannot be empty.", "warning");
+                    return;
+                }
+                if (newName === oldName) {
+                    showMessage("The new name is the same as the old name.", "info");
+                    hideRenameModal();
+                    return;
+                }
+
+                hideRenameModal();
+                try {
+                    await postToAction({ 
+                        action: "renameProject", 
+                        oldProjectName: oldName,
+                        newProjectName: newName
+                    });
+                    showMessage(`Project '${oldName}' renamed to '${newName}' successfully.`, "success");
+                    await loadProjectsAndRender();
+                } catch (error) {
+                    // Error is handled by apiRequest
+                }
+            };
+        }
+
+        function hideRenameModal() {
+            renameModal.style.display = 'none';
+            renameForm.onsubmit = null; // Clean up listener
+        }
+
+
         function renderAdminProjectList(projects) {
             adminProjectList.innerHTML = "";
             if(projects.length === 0){
@@ -883,8 +935,16 @@
             projects.forEach(p => {
                 const item = document.createElement("div");
                 item.className = "flex justify-between items-center p-2 border rounded-md bg-gray-50";
-                item.innerHTML = `<span>${p}</span><button class="btn btn-danger text-xs p-1"><i class="fas fa-trash"></i></button>`;
-                item.querySelector("button").addEventListener("click", () => showConfirmation(`Confirm Project Deletion`, `Are you sure you want to delete the project <b>${p}</b>? <br><b class='text-red-600'>All associated data will be deleted and cannot be recovered.</b>`, async () => {
+                item.innerHTML = `
+                    <span class="flex-grow">${p}</span>
+                    <div class="flex items-center space-x-1 flex-shrink-0">
+                        <button class="rename-btn btn btn-secondary btn-icon text-xs p-1" title="Rename"><i class="fas fa-pencil-alt"></i></button>
+                        <button class="delete-btn btn btn-danger btn-icon text-xs p-1" title="Delete"><i class="fas fa-trash"></i></button>
+                    </div>`;
+
+                item.querySelector(".rename-btn").addEventListener("click", () => showRenameModal(p));
+
+                item.querySelector(".delete-btn").addEventListener("click", () => showConfirmation(`Confirm Project Deletion`, `Are you sure you want to delete the project <b>${p}</b>? <br><b class='text-red-600'>All associated data will be deleted and cannot be recovered.</b>`, async () => {
                     await postToAction({ action: "deleteProject", projectName: p });
                     await loadProjectsAndRender();
                     hideConfirmation();
@@ -915,8 +975,8 @@
                     <td>${person.id}</td>
                     <td>
                         ${isEditing 
-                            ? `<input type="text" value="${person.name}" data-id="${person.id}" class="w-full bg-blue-50">`
-                            : `<span>${person.name}</span>`
+                            ? `<input type="text" value="${person.name}" data-id="${person.id}" class="w-full bg-blue-50" style="font-family: 'Sarabun', sans-serif;">`
+                            : `<span style="font-family: 'Sarabun', sans-serif;">${person.name}</span>`
                         }
                     </td>
                 `;
@@ -1003,7 +1063,7 @@
                     const row = document.createElement('tr');
                     row.innerHTML = `
                         <td>${prefix}</td>
-                        <td>${summary.name}</td>
+                        <td style="font-family: 'Sarabun', sans-serif;">${summary.name}</td>
                         <td class="text-center">${summary.count}</td>
                     `;
                     dashboardSummaryTable.appendChild(row);
@@ -1162,21 +1222,55 @@
                     } catch(err) { /* Handled */ }
                 }
             });
-            passwordForm.addEventListener("submit", e => {
+
+            // --- UPDATED PASSWORD FORM LOGIC ---
+            passwordForm.addEventListener("submit", async (e) => {
                 e.preventDefault();
-                if (passwordInput.value === "SIM") { 
-                    passwordModal.style.display = "none";
-                    showView("admin-menu-view");
-                } else {
-                    showMessage("Incorrect password", "error");
-                    passwordInput.select();
+                const enteredPassword = passwordInput.value;
+                if (!enteredPassword) return;
+                
+                showSpinner(true);
+                passwordInput.value = ""; 
+
+                try {
+                    const payload = { 
+                        action: "verifyPassword", 
+                        password: enteredPassword 
+                    };
+                    const response = await fetch(WEB_APP_URL, {
+                        method: "POST",
+                        mode: "cors",
+                        cache: "no-cache",
+                        headers: { "Content-Type": "text/plain;charset=utf-8" },
+                        body: JSON.stringify(payload)
+                    });
+
+                    const result = await response.json();
+
+                    if (result.success) {
+                        passwordModal.style.display = "none";
+                        showView("admin-menu-view");
+                    } else {
+                        showMessage(result.message || "Incorrect password", "error");
+                        passwordInput.focus();
+                        passwordInput.select();
+                    }
+                } catch (error) {
+                    showMessage("An error occurred during verification.", "error");
+                    console.error("Password verification failed:", error);
+                } finally {
+                    showSpinner(false);
                 }
-                passwordInput.value = "";
             });
+            
             cancelPasswordBtn.addEventListener("click", () => {
                 passwordModal.style.display = "none";
                 passwordInput.value = "";
             });
+
+            // New Listener for Rename Modal
+            cancelRenameBtn.addEventListener("click", hideRenameModal);
+
             setupAutocomplete();
         }
         
