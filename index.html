@@ -322,7 +322,7 @@
     <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
     <script>
         // --- CONSTANTS AND GLOBAL VARIABLES --- //
-        const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbwVdrge0oVSLcXWG9mNR4joc1lbsrg1KJZMW4HJzsXrwKIlxB1-7tf8M-GN31jcO1nEAQ/exec'; 
+        const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbynWq5YVldjwlkrjoCOCq7LqcdRHWXjI2CFhrJeWgf1TBXEQLlEmnwE9LdYTGz5JUBT/exec'; 
         
         let map, currentMarker = null, permanentMarkers = L.layerGroup(), permanentMarkersMap = {}, currentLat = null, currentLng = null, editingId = null, editingMarker = null;
         let dashboardMap;
@@ -541,11 +541,12 @@
                 row.dataset.id = loc.ID;
                 
                 const pendingIndicator = loc.isPending ? '<i class="fas fa-clock pending-icon" title="Pending Upload"></i>' : '';
+                const timestamp = loc.Timestamp ? new Date(loc.Timestamp).toLocaleString("en-US") : "Invalid Date";
 
                 row.innerHTML = `
-                    <td>${index + 1}</td>
+                    <td>${locations.length - index}</td>
                     <td>${loc.EmployeeID} ${pendingIndicator}</td>
-                    <td>${new Date(loc.Timestamp).toLocaleString("en-US")}</td>
+                    <td>${timestamp}</td>
                     <td><a href="${loc.GoogleMapsLink}" target="_blank" class="text-blue-600 hover:underline text-sm p-1" title="View on Google Maps"><i class="fas fa-map-marker-alt"></i></a></td>
                     <td class="space-x-2">
                         <button class="edit-btn bg-yellow-500 hover:bg-yellow-600 text-white p-1 rounded-lg text-xs" title="Edit"><i class="fas fa-edit"></i></button>
@@ -970,6 +971,9 @@
                 adminProjectList.innerHTML = `<p class="text-center text-gray-500">No projects yet.</p>`;
                 return;
             }
+            
+            const isLastProject = projects.length === 1;
+
             projects.forEach(p => {
                 const item = document.createElement("div");
                 item.className = "flex justify-between items-center p-2 border rounded-lg bg-gray-50";
@@ -981,12 +985,26 @@
                     </div>`;
 
                 item.querySelector(".rename-btn").addEventListener("click", () => showRenameModal(p));
-
-                item.querySelector(".delete-btn").addEventListener("click", () => showConfirmation(`Confirm Project Deletion`, `Are you sure you want to delete the project <b>${p}</b>? <br><b class='text-red-600'>All associated data will be deleted and cannot be recovered.</b>`, async () => {
-                    await postToAction({ action: "deleteProject", projectName: p });
-                    await loadProjectsAndRender();
-                    hideConfirmation();
-                }));
+                
+                const deleteBtn = item.querySelector(".delete-btn");
+                if (isLastProject) {
+                    deleteBtn.disabled = true;
+                    deleteBtn.title = "Cannot delete the last project.";
+                    deleteBtn.classList.add("opacity-50", "cursor-not-allowed");
+                } else {
+                    deleteBtn.addEventListener("click", () => showConfirmation(`Confirm Project Deletion`, `Are you sure you want to delete the project <b>${p}</b>? <br><b class='text-red-600'>The project will be removed from the list but the data sheet will NOT be deleted.</b>`, async () => {
+                        try {
+                            await postToAction({ action: "deleteProject", projectName: p });
+                             showMessage(`Project '${p}' removed successfully.`, 'success');
+                            await loadProjectsAndRender();
+                        } catch(err) {
+                            // Error is handled by apiRequest
+                        } finally {
+                            hideConfirmation();
+                        }
+                    }));
+                }
+                
                 adminProjectList.appendChild(item);
             });
         }
