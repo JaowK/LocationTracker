@@ -304,7 +304,7 @@
                         <h4 class="font-semibold text-sm">Saved Locations</h4>
                         <button id="clearAllButton" class="text-xs btn btn-danger p-1">Clear All</button>
                     </div>
-                    <div class="table-scroll"><table class="w-full"><thead><tr><th>ID</th><th>Timestamp</th><th>Map</th><th>Actions</th></tr></thead><tbody id="savedLocationsTableBody"></tbody></table></div>
+                    <div class="table-scroll"><table class="w-full"><thead><tr><th>No.</th><th>ID</th><th>Timestamp</th><th>Map</th><th>Actions</th></tr></thead><tbody id="savedLocationsTableBody"></tbody></table></div>
                 </div>
             </div>
         </div>
@@ -532,16 +532,18 @@
         function renderTable(locations) {
             savedLocationsTableBody.innerHTML = "";
             if (locations.length === 0) {
-                savedLocationsTableBody.innerHTML = `<tr><td colspan="4" class="py-4 px-4 text-gray-500 text-center">No saved locations yet</td></tr>`;
+                savedLocationsTableBody.innerHTML = `<tr><td colspan="5" class="py-4 px-4 text-gray-500 text-center">No saved locations yet</td></tr>`;
                 return;
             }
-            locations.slice().reverse().forEach(loc => {
+            const reversedLocations = locations.slice().reverse();
+            reversedLocations.forEach((loc, index) => {
                 const row = document.createElement("tr");
                 row.dataset.id = loc.ID;
                 
                 const pendingIndicator = loc.isPending ? '<i class="fas fa-clock pending-icon" title="Pending Upload"></i>' : '';
 
                 row.innerHTML = `
+                    <td>${index + 1}</td>
                     <td>${loc.EmployeeID} ${pendingIndicator}</td>
                     <td>${new Date(loc.Timestamp).toLocaleString("en-US")}</td>
                     <td><a href="${loc.GoogleMapsLink}" target="_blank" class="text-blue-600 hover:underline text-sm p-1" title="View on Google Maps"><i class="fas fa-map-marker-alt"></i></a></td>
