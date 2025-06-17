@@ -535,8 +535,8 @@
                 savedLocationsTableBody.innerHTML = `<tr><td colspan="5" class="py-4 px-4 text-gray-500 text-center">No saved locations yet</td></tr>`;
                 return;
             }
-            const reversedLocations = locations.slice().reverse();
-            reversedLocations.forEach((loc, index) => {
+            const sortedLocations = locations.slice().sort((a, b) => new Date(a.Timestamp) - new Date(b.Timestamp)); // จากเก่า -> ใหม่
+            sortedLocations.forEach((loc, index) => {
                 const row = document.createElement("tr");
                 row.dataset.id = loc.ID;
                 
@@ -544,7 +544,7 @@
                 const timestamp = loc.Timestamp ? new Date(loc.Timestamp).toLocaleString("en-US") : "Invalid Date";
 
                 row.innerHTML = `
-                    <td>${locations.length - index}</td>
+                    <td>${index+1}</td>
                     <td>${loc.EmployeeID} ${pendingIndicator}</td>
                     <td>${timestamp}</td>
                     <td><a href="${loc.GoogleMapsLink}" target="_blank" class="text-blue-600 hover:underline text-sm p-1" title="View on Google Maps"><i class="fas fa-map-marker-alt"></i></a></td>
