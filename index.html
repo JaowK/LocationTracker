@@ -11,7 +11,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Sarabun:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <style>
-        :root {
+        :root { 
             --primary-color: #3B82F6; /* Blue 500 */
             --secondary-color: #6B7280; /* Gray 500 */
             --danger-color: #EF4444; /* Red 500 */
@@ -54,13 +54,13 @@
         #messageBox { display: none; }
         .modal-overlay { position: fixed; inset: 0; background-color: rgba(17, 24, 39, 0.6); display: none; align-items: center; justify-content: center; z-index: 9998; backdrop-filter: blur(4px); }
         .modal-content { background-color: white; border-radius: 1rem; /* Increased */ padding: 1.5rem; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1), 0 10px 10px -5px rgba(0,0,0,0.04); max-width: 400px; width: 90%; text-align: center; }
-        input[type="text"], input[type="password"], select { 
+        input[type="text"], input[type="password"], select, textarea { /* Added textarea */
             width: 100%; padding: 0.6rem 0.75rem; font-size: 0.875rem; 
             border: 1px solid #D1D5DB; border-radius: 0.75rem; /* Increased */
             transition: border-color 0.2s, box-shadow 0.2s;
             background-color: white;
         }
-        input[type="text"]:focus, input[type="password"]:focus, select:focus {
+        input[type="text"]:focus, input[type="password"]:focus, select:focus, textarea:focus { /* Added textarea */
             outline: none;
             border-color: var(--primary-color);
             box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.4);
@@ -126,7 +126,7 @@
                 <!-- Subtitle and Count Section -->
                 <div class="flex justify-between items-center mb-4">
                     <div>
-                        <p id="project-count" class="text-sm text-gray-500 font-semibold">All Projects 0</p>
+                        <p id="project-count" class="text-sm text-gray-500 font-semibold">All Project 0</p>
                     </div>
                     <button id="manage-projects-btn" class="btn btn-secondary btn-icon text-sm" title="Manage Projects"><i class="fas fa-cog"></i></button>
                 </div>
@@ -179,30 +179,30 @@
         <!-- View: ID Field -->
         <div id="id-field-view" class="app-view">
             <div class="main-card p-4 sm:p-6 h-full flex flex-col">
-                 <div class="flex justify-between items-center mb-4">
-                    <h2 class="text-xl sm:text-2xl font-bold text-gray-800">Manage IDs</h2>
-                    <div class="space-x-2">
-                        <button id="edit-id-field-btn" class="btn btn-secondary btn-icon text-sm" title="Edit Names"><i class="fas fa-pencil-alt"></i></button>
-                        <button id="save-id-field-btn" class="hidden btn btn-success text-sm">Save</button>
+                    <div class="flex justify-between items-center mb-4">
+                        <h2 class="text-xl sm:text-2xl font-bold text-gray-800">Manage IDs</h2>
+                        <div class="space-x-2">
+                            <button id="edit-id-field-btn" class="btn btn-secondary btn-icon text-sm" title="Edit Names"><i class="fas fa-pencil-alt"></i></button>
+                            <button id="save-id-field-btn" class="hidden btn btn-success text-sm">Save</button>
+                        </div>
                     </div>
-                 </div>
-                 <div class="mb-4">
-                     <input id="id-field-search" type="text" placeholder="Search by ID or Name..." class="w-full">
-                 </div>
-                 <div class="flex-grow table-scroll">
-                    <table class="w-full">
-                        <thead>
-                            <tr>
-                                <th>ID Field</th>
-                                <th>Name</th>
-                            </tr>
-                        </thead>
-                        <tbody id="id-field-table-body">
-                            <!-- Data will be populated by JS -->
-                        </tbody>
-                    </table>
-                 </div>
-                 <button id="id-field-back-to-menu-btn" class="btn btn-secondary text-sm mt-4"><i class="fas fa-arrow-left"></i> Back</button>
+                    <div class="mb-4">
+                        <input id="id-field-search" type="text" placeholder="Search by ID or Name..." class="w-full">
+                    </div>
+                    <div class="flex-grow table-scroll">
+                        <table class="w-full">
+                            <thead>
+                                <tr>
+                                    <th>ID Field</th>
+                                    <th>Name</th>
+                                </tr>
+                            </thead>
+                            <tbody id="id-field-table-body">
+                                <!-- Data will be populated by JS -->
+                            </tbody>
+                        </table>
+                    </div>
+                    <button id="id-field-back-to-menu-btn" class="btn btn-secondary text-sm mt-4"><i class="fas fa-arrow-left"></i> Back</button>
             </div>
         </div>
 
@@ -230,10 +230,10 @@
                             <p id="kpi-unique-employees" class="text-2xl font-bold text-primary-color">0</p>
                         </div>
                     </div>
-                     <!-- Map -->
+                    <!-- Map -->
                     <div>
-                         <h3 class="text-lg font-semibold text-gray-900 mb-2">Locations Overview</h3>
-                         <div id="dashboard-map"></div>
+                            <h3 class="text-lg font-semibold text-gray-900 mb-2">Locations Overview</h3>
+                            <div id="dashboard-map"></div>
                     </div>
                     <!-- Employee Summary Table -->
                     <div>
@@ -254,9 +254,9 @@
                         </div>
                     </div>
                 </div>
-                 <div id="dashboard-placeholder" class="text-center text-gray-500 py-10">
-                    <p>Please select a project to view the summary.</p>
-                 </div>
+                    <div id="dashboard-placeholder" class="text-center text-gray-500 py-10">
+                        <p>Please select a project to view the summary.</p>
+                    </div>
             </div>
         </div>
         
@@ -266,7 +266,7 @@
                 <div class="flex justify-between items-center">
                     <button id="home-button" class="btn btn-secondary btn-icon" title="Go Home"><i class="fas fa-home"></i></button>
                     <h3 id="tracker-title" class="text-lg sm:text-xl font-semibold text-gray-800 text-center truncate"></h3>
-                    <div style="width: 40px;"></div> <!-- Spacer -->
+                    <button id="customizeLabelsBtn" class="btn btn-secondary btn-icon" title="Customize Labels"><i class="fas fa-magic"></i></button> <!-- NEW: Customize Labels Button -->
                 </div>
                 <div id="map"></div>
                 <div class="p-3 rounded-xl bg-blue-50 border border-blue-200">
@@ -277,7 +277,17 @@
                     </div>
                 </div>
                 <div class="space-y-3">
-                    <div class="input-row"><label for="employeeIdInput">Employee ID</label><input id="employeeIdInput" type="text" placeholder="6-digit Employee ID" /></div>
+                    <div class="flex gap-2"> <!-- Flex container for Employee ID and Survey ID -->
+                        <div class="input-row flex-grow">
+                            <label id="employeeIdLabel" for="employeeIdInput">ID พนักงาน</label> <!-- Updated label -->
+                            <input id="employeeIdInput" type="text" placeholder="ID พนักงาน (4 หลัก)" />
+                        </div>
+                        <div class="input-row flex-grow">
+                            <label id="surveyIdLabel" for="surveyIdInput">ID แบบสอบถาม</label> <!-- Updated label -->
+                            <input id="surveyIdInput" type="text" placeholder="ID แบบสอบถาม" />
+                        </div>
+                    </div>
+                    <!-- Removed Location Notes input -->
                     <div class="input-row">
                         <label for="locationSearchInput">Search Location</label>
                         <div class="flex-1 flex">
@@ -304,7 +314,7 @@
                         <h4 class="font-semibold text-sm">Saved Locations</h4>
                         <button id="clearAllButton" class="text-xs btn btn-danger p-1">Clear All</button>
                     </div>
-                    <div class="table-scroll"><table class="w-full"><thead><tr><th>No.</th><th>ID</th><th>Timestamp</th><th>Map</th><th>Actions</th></tr></thead><tbody id="savedLocationsTableBody"></tbody></table></div>
+                    <div class="table-scroll"><table class="w-full"><thead><tr><th>No.</th><th>ID พนักงาน</th><th>ID แบบสอบถาม</th><th>Timestamp</th><th>Map</th><th>Actions</th></tr></thead><tbody id="savedLocationsTableBody"></tbody></table></div> <!-- Updated table headers -->
                 </div>
             </div>
         </div>
@@ -317,12 +327,33 @@
     <!-- NEW: Rename Project Modal -->
     <div id="renameModal" class="modal-overlay"><div class="modal-content"><h4 id="renameModalTitle" class="text-xl font-bold mb-4">Rename Project</h4><form id="rename-form" class="space-y-4"><input id="rename-input" type="text" class="w-full" required><div class="flex justify-end gap-2"><button type="button" id="cancel-rename-btn" class="btn btn-secondary">Cancel</button><button type="submit" class="btn btn-primary">Rename</button></div></form></div></div>
 
+    <!-- NEW: Customize Labels Modal -->
+    <div id="customizeLabelsModal" class="modal-overlay">
+        <div class="modal-content">
+            <h4 class="text-xl font-bold mb-4">Customize Labels</h4>
+            <form id="customize-labels-form" class="space-y-4">
+                <div>
+                    <label for="employeeIdLabelInput" class="block text-sm font-medium text-gray-700 mb-1">Employee ID Label</label>
+                    <input type="text" id="employeeIdLabelInput" class="w-full" placeholder="ID พนักงาน">
+                </div>
+                <div>
+                    <label for="surveyIdLabelInput" class="block text-sm font-medium text-gray-700 mb-1">Survey ID Label</label>
+                    <input type="text" id="surveyIdLabelInput" class="w-full" placeholder="ID แบบสอบถาม">
+                </div>
+                <div class="flex justify-end gap-2">
+                    <button type="button" id="cancelCustomizeLabelsBtn" class="btn btn-secondary">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Save Labels</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
     <div id="messageBox"></div><div id="loadingSpinner"><i class="fas fa-spinner fa-spin"></i><span>Loading...</span></div>
     
     <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
     <script>
         // --- CONSTANTS AND GLOBAL VARIABLES --- //
-        const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbynWq5YVldjwlkrjoCOCq7LqcdRHWXjI2CFhrJeWgf1TBXEQLlEmnwE9LdYTGz5JUBT/exec'; 
+        const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbyHhvWDTjb46IB9f8mPFbwnmq3OzJ6UEWNXbjxk0fuinSCAf2qqJ4JijrxidQD4evJUFg/exec'; 
         
         let map, currentMarker = null, permanentMarkers = L.layerGroup(), permanentMarkersMap = {}, currentLat = null, currentLng = null, editingId = null, editingMarker = null;
         let dashboardMap;
@@ -353,6 +384,11 @@
             {id: 865, name: 'สุกัญญารัตน์ คชภูมิ'}
         ];
 
+        // NEW: Custom labels state
+        let customLabels = JSON.parse(localStorage.getItem('customLabels')) || {
+            employeeId: 'ID พนักงาน', // Updated to Thai
+            surveyId: 'ID แบบสอบถาม' // Updated to Thai
+        };
 
         // --- DOM ELEMENT SELECTORS --- //
         const allViews = document.querySelectorAll(".app-view");
@@ -371,6 +407,8 @@
             messageBox = document.getElementById("messageBox"),
             savedLocationsTableBody = document.getElementById("savedLocationsTableBody"),
             employeeIdInput = document.getElementById("employeeIdInput"),
+            surveyIdInput = document.getElementById("surveyIdInput"), // Survey ID Input
+            // Removed locationNotesInput
             locationSearchInput = document.getElementById("locationSearchInput"),
             clearSearchIcon = document.getElementById("clearSearchIcon"),
             autocompleteList = document.getElementById("autocompleteList"),
@@ -421,8 +459,18 @@
             renameModalTitle = document.getElementById("renameModalTitle"),
             renameForm = document.getElementById("rename-form"),
             renameInput = document.getElementById("rename-input"),
-            cancelRenameBtn = document.getElementById("cancel-rename-btn");
-        
+            cancelRenameBtn = document.getElementById("cancel-rename-btn"),
+            // NEW: Customize Labels selectors
+            customizeLabelsBtn = document.getElementById("customizeLabelsBtn"),
+            customizeLabelsModal = document.getElementById("customizeLabelsModal"),
+            customizeLabelsForm = document.getElementById("customize-labels-form"),
+            employeeIdLabelInput = document.getElementById("employeeIdLabelInput"),
+            surveyIdLabelInput = document.getElementById("surveyIdLabelInput"),
+            cancelCustomizeLabelsBtn = document.getElementById("cancelCustomizeLabelsBtn"),
+            employeeIdLabelElement = document.getElementById("employeeIdLabel"), // Reference to the actual label element
+            surveyIdLabelElement = document.getElementById("surveyIdLabel"); // Reference to the actual label element
+
+
         // --- LEAFLET ICONS --- //
         const redIcon = new L.Icon({ iconUrl: "https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-red.png", shadowUrl: "https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-shadow.png", iconSize: [25, 41], iconAnchor: [12, 41], popupAnchor: [1, -34], shadowSize: [41, 41] }),
             blueIcon = new L.Icon({ iconUrl: "https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-blue.png", shadowUrl: "https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-shadow.png", iconSize: [25, 41], iconAnchor: [12, 41], popupAnchor: [1, -34], shadowSize: [41, 41] }),
@@ -438,6 +486,10 @@
                      if (dashboardMap) dashboardMap.invalidateSize();
                  }, 10);
              }
+            // Update labels when tracker view is shown
+            if (viewId === 'tracker-view') {
+                updateTrackerLabels();
+            }
         }
 
         function showSpinner(show) {
@@ -483,7 +535,7 @@
         function initializeDashboardMap() {
             if (!dashboardMap) {
                 dashboardMap = L.map("dashboard-map").setView([13.7563, 100.5018], 5);
-                 L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", { attribution: "© OpenStreetMap contributors" }).addTo(dashboardMap);
+                L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", { attribution: "© OpenStreetMap contributors" }).addTo(dashboardMap);
             }
         }
 
@@ -532,7 +584,7 @@
         function renderTable(locations) {
             savedLocationsTableBody.innerHTML = "";
             if (locations.length === 0) {
-                savedLocationsTableBody.innerHTML = `<tr><td colspan="5" class="py-4 px-4 text-gray-500 text-center">No saved locations yet</td></tr>`;
+                savedLocationsTableBody.innerHTML = `<tr><td colspan="6" class="py-4 px-4 text-gray-500 text-center">No saved locations yet</td></tr>`; // Updated colspan
                 return;
             }
             const sortedLocations = locations.slice().sort((a, b) => new Date(a.Timestamp) - new Date(b.Timestamp)); // จากเก่า -> ใหม่
@@ -546,6 +598,7 @@
                 row.innerHTML = `
                     <td>${index+1}</td>
                     <td>${loc.EmployeeID} ${pendingIndicator}</td>
+                    <td>${loc.SurveyID || '-'}</td> <!-- Display Survey ID -->
                     <td>${timestamp}</td>
                     <td><a href="${loc.GoogleMapsLink}" target="_blank" class="text-blue-600 hover:underline text-sm p-1" title="View on Google Maps"><i class="fas fa-map-marker-alt"></i></a></td>
                     <td class="space-x-2">
@@ -631,22 +684,29 @@
                 return;
             }
             const empId = employeeIdInput.value.trim();
-            const idRegex = /^\d{6}$/;
+            const surveyId = surveyIdInput.value.trim(); // Get Survey ID
+
+            // Updated regex for 1-4 digits
+            const idRegex = /^\d{1,4}$/; 
             if(!idRegex.test(empId)) {
-                showMessage("Employee ID must be 6 digits.", "warning");
+                showMessage("ID พนักงานต้องเป็นตัวเลข 1-4 หลัก.", "warning"); // Updated message
                 return;
             }
 
-            // Check for duplicates
+            // REMOVED: Duplicate check for Employee ID
+            /*
             const isDuplicate = savedLocations.some(loc => String(loc.EmployeeID) === empId) || pendingLocations.some(loc => String(loc.EmployeeID) === empId);
             if (isDuplicate) {
                 showMessage("This Employee ID is already in use in this project.", "error");
                 return;
             }
+            */
             
             const newLoc = {
                 ID: `pending_${Date.now()}`,
                 EmployeeID: empId,
+                SurveyID: surveyId, // Include Survey ID
+                // Removed LocationNotes
                 Latitude: currentLat,
                 Longitude: currentLng,
                 Timestamp: new Date().toISOString(),
@@ -655,25 +715,26 @@
             };
 
             pendingLocations.push(newLoc);
-            showMessage(`Saved ${empId}. Please press Upload to send data.`, "success");
+            showMessage(`บันทึก ID พนักงาน ${empId} แล้ว. กรุณากดอัปโหลดเพื่อส่งข้อมูล.`, "success"); // Updated message
             employeeIdInput.value = "";
+            surveyIdInput.value = ""; // Clear Survey ID input
             hideCurrentMarker();
             renderAll();
         }
         
         function undoLastSave() {
             if (pendingLocations.length === 0) {
-                showMessage("No recent items to undo", "warning");
+                showMessage("ไม่มีรายการที่เพิ่งบันทึกให้ยกเลิก", "warning"); // Updated message
                 return;
             }
             const undoneLocation = pendingLocations.pop();
-            showMessage(`Undid save for: ${undoneLocation.EmployeeID}`, "info");
+            showMessage(`ยกเลิกการบันทึกสำหรับ ID พนักงาน: ${undoneLocation.EmployeeID}`, "info"); // Updated message
             renderAll();
         }
 
         async function uploadPendingLocations() {
             if (pendingLocations.length === 0) {
-                showMessage("No data to upload", "info");
+                showMessage("ไม่มีข้อมูลให้อัปโหลด", "info"); // Updated message
                 return;
             }
 
@@ -686,6 +747,8 @@
                     project: currentProjectName,
                     data: {
                         name: loc.EmployeeID,
+                        surveyId: loc.SurveyID || '', // Include Survey ID
+                        // Removed notes
                         lat: loc.Latitude,
                         lng: loc.Longitude
                     }
@@ -697,13 +760,13 @@
                         successCount++;
                     }
                 } catch (error) {
-                    showMessage(`Upload for ${loc.EmployeeID} failed. Uploaded ${successCount} items.`, "error");
+                    showMessage(`การอัปโหลด ID พนักงาน ${loc.EmployeeID} ล้มเหลว. อัปโหลดสำเร็จ ${successCount} รายการ.`, "error"); // Updated message
                     await fetchLocations(currentProjectName);
                     return; 
                 }
             }
 
-            showMessage(`Successfully uploaded ${successCount} of ${totalToUpload} items!`, "success");
+            showMessage(`อัปโหลดสำเร็จ ${successCount} จาก ${totalToUpload} รายการ!`, "success"); // Updated message
             await fetchLocations(currentProjectName);
         }
 
@@ -728,6 +791,8 @@
             // Update UI
             map.setView([loc.Latitude, loc.Longitude], map.getZoom() || 14);
             employeeIdInput.value = loc.EmployeeID;
+            surveyIdInput.value = loc.SurveyID || ''; // Populate Survey ID
+            // Removed locationNotesInput.value = loc.LocationNotes || '';
             updateCurrentMarker(loc.Latitude, loc.Longitude);
             editActionButtonsDiv.classList.remove("hidden");
             normalActionButtonsDiv.classList.add("hidden");
@@ -737,19 +802,24 @@
             if(!editingId) return;
 
             const empId = employeeIdInput.value.trim();
-            const idRegex = /^\d{6}$/;
+            const surveyId = surveyIdInput.value.trim(); // Get Survey ID
+
+            // Updated regex for 1-4 digits
+            const idRegex = /^\d{1,4}$/;
             if(!idRegex.test(empId)) {
-                showMessage("Employee ID must be 6 digits.", "warning");
+                showMessage("ID พนักงานต้องเป็นตัวเลข 1-4 หลัก.", "warning"); // Updated message
                 return;
             }
 
-            // Check for duplicates, excluding the item being edited itself
+            // REMOVED: Duplicate check for Employee ID
+            /*
             const isDuplicate = savedLocations.some(loc => String(loc.EmployeeID) === empId && String(loc.ID) !== String(editingId)) || 
-                                  pendingLocations.some(loc => String(loc.EmployeeID) === empId && String(loc.ID) !== String(editingId));
+                                pendingLocations.some(loc => String(loc.EmployeeID) === empId && String(loc.ID) !== String(editingId));
             if(isDuplicate) {
-                 showMessage("This Employee ID is already in use by another entry in this project.", "error");
-                 return;
+                showMessage("This Employee ID is already in use by another entry in this project.", "error");
+                return;
             }
+            */
 
             // *** NEW LOGIC: Check if it's a pending item or a saved item ***
             if (String(editingId).startsWith('pending_')) {
@@ -757,16 +827,29 @@
                 const locToUpdate = pendingLocations.find(l => String(l.ID) === String(editingId));
                 if (locToUpdate) {
                     locToUpdate.EmployeeID = empId;
+                    locToUpdate.SurveyID = surveyId; // Update Survey ID
+                    // Removed LocationNotes
                     locToUpdate.Latitude = currentLat;
                     locToUpdate.Longitude = currentLng;
                     locToUpdate.Timestamp = new Date().toISOString();
                     locToUpdate.GoogleMapsLink = `https://maps.google.com/?q=${currentLat},${currentLng}`;
                 }
-                showMessage(`Updated pending item ${empId} successfully`, "success");
+                showMessage(`อัปเดตรายการที่รอดำเนินการสำหรับ ID พนักงาน ${empId} สำเร็จแล้ว`, "success"); // Updated message
                 cancelEdit(); // This will re-render everything
             } else {
                 // It's a saved item, send update to the server
-                const payload = { action: "update", id: editingId, project: currentProjectName, data: { name: empId, lat: currentLat, lng: currentLng } };
+                const payload = { 
+                    action: "update", 
+                    id: editingId, 
+                    project: currentProjectName, 
+                    data: { 
+                        name: empId, 
+                        surveyId: surveyId, // Include Survey ID
+                        // Removed notes
+                        lat: currentLat, 
+                        lng: currentLng 
+                    } 
+                };
                 try {
                     const result = await postToAction(payload);
                     if(result && result.success){
@@ -785,6 +868,8 @@
             editingId = null;
             hideCurrentMarker();
             employeeIdInput.value = "";
+            surveyIdInput.value = ""; // Clear Survey ID input
+            // Removed locationNotesInput.value = "";
             editActionButtonsDiv.classList.add("hidden");
             normalActionButtonsDiv.classList.remove("hidden");
             renderAll(); // Re-render to restore original markers and table
@@ -799,12 +884,12 @@
 
             if (!loc) return;
 
-            showConfirmation("Confirm Deletion", `Are you sure you want to delete the entry for <b>${name}</b>?`, async () => {
+            showConfirmation("ยืนยันการลบ", `คุณแน่ใจหรือไม่ว่าต้องการลบรายการสำหรับ <b>ID พนักงาน ${name}</b>?`, async () => { // Updated message
                 if (isPending) {
                     // Just remove from the local pending array
                     pendingLocations = pendingLocations.filter(p => String(p.ID) !== String(id));
                     renderAll();
-                    showMessage("Removed pending entry", "info");
+                    showMessage("ลบรายการที่รอดำเนินการแล้ว", "info"); // Updated message
                 } else {
                     // Send delete request to the server
                     const payload = { action: "delete", project: currentProjectName, id: id };
@@ -818,16 +903,16 @@
         }
         
         function requestClearAll() {
-            if (savedLocations.length === 0 && pendingLocations.length === 0) return showMessage("No data to clear", "warning");
+            if (savedLocations.length === 0 && pendingLocations.length === 0) return showMessage("ไม่มีข้อมูลให้ล้าง", "warning"); // Updated message
             
-            let message = `Are you sure you want to delete all <b>saved</b> data for project <b>${currentProjectName}</b>?`;
+            let message = `คุณแน่ใจหรือไม่ว่าต้องการลบข้อมูลที่<b>บันทึกแล้วทั้งหมด</b>สำหรับโปรเจกต์ <b>${currentProjectName}</b>?`; // Updated message
             if (pendingLocations.length > 0) {
-                 message += `<br><br>This will also clear ${pendingLocations.length} <b>pending</b> items.`;
+                message += `<br><br>นี่จะล้างรายการที่<b>รอดำเนินการ</b> ${pendingLocations.length} รายการด้วย.`; // Updated message
             }
-              message += `<br><br><b class='text-red-600'>This action cannot be undone.</b>`;
+            message += `<br><br><b class='text-red-600'>การดำเนินการนี้ไม่สามารถย้อนกลับได้.</b>`; // Updated message
 
 
-            showConfirmation("Confirm Clear All", message, async () => {
+            showConfirmation("ยืนยันการล้างทั้งหมด", message, async () => { // Updated message
                 pendingLocations = [];
                 const payload = { action: "deleteAll", project: currentProjectName };
                 try {
@@ -845,7 +930,7 @@
                     updateCurrentMarker(pos.coords.latitude, pos.coords.longitude);
                     map.setView([pos.coords.latitude, pos.coords.longitude], 15);
                 },
-                () => showMessage("Could not get current location", "error"),
+                () => showMessage("ไม่สามารถรับตำแหน่งปัจจุบันได้", "error"), // Updated message
                 { enableHighAccuracy: true }
             );
         }
@@ -864,12 +949,12 @@
                         locationSearchInput.value = display_name;
                         hideAutocomplete();
                     } else {
-                        showMessage("Location not found", "warning");
+                        showMessage("ไม่พบตำแหน่ง", "warning"); // Updated message
                     }
                 })
                 .catch(err => {
                     console.error("Search Error:", err);
-                    showMessage("Error during search", "error");
+                    showMessage("เกิดข้อผิดพลาดระหว่างการค้นหา", "error"); // Updated message
                 })
                 .finally(() => showSpinner(false));
         }
@@ -877,12 +962,24 @@
         // --- UTILITY & PROJECT MANAGEMENT --- //
         function exportToCSV() {
             const allLocations = [...savedLocations, ...pendingLocations];
-            if (allLocations.length === 0) return showMessage("No data to export!", "warning");
-            const headers = "EmployeeID,Latitude,Longitude,Timestamp,GoogleMapsLink,Status\n";
+            if (allLocations.length === 0) return showMessage("ไม่มีข้อมูลให้ส่งออก!", "warning"); // Updated message
+            
+            // Updated headers for new fields
+            const headers = "EmployeeID,SurveyID,Latitude,Longitude,Timestamp,GoogleMapsLink,Status\n"; // Removed LocationNotes header
             let csvContent = "data:text/csv;charset=utf-8,\uFEFF" + headers;
+            
             allLocations.forEach(loc => {
                 const status = loc.isPending ? "Pending Upload" : "Saved";
-                const row = [loc.EmployeeID, loc.Latitude, loc.Longitude, new Date(loc.Timestamp).toISOString(), loc.GoogleMapsLink, status].join(",");
+                // Ensure values are properly quoted and handled for CSV
+                const empId = `"${(loc.EmployeeID || '').replace(/"/g, '""')}"`;
+                const surveyId = `"${(loc.SurveyID || '').replace(/"/g, '""')}"`;
+                // Removed notes
+                const latitude = loc.Latitude;
+                const longitude = loc.Longitude;
+                const timestamp = new Date(loc.Timestamp).toISOString();
+                const googleMapsLink = `"${(loc.GoogleMapsLink || '').replace(/"/g, '""')}"`;
+
+                const row = [empId, surveyId, latitude, longitude, timestamp, googleMapsLink, status].join(","); // Removed notes from row
                 csvContent += row + "\n";
             });
             const link = document.createElement("a");
@@ -903,10 +1000,10 @@
         
         function renderProjectCards(projectsToRender) {
             projectList.innerHTML = "";
-            projectCount.textContent = `All Projects ${projectsToRender.length}`;
+            projectCount.textContent = `All Project ${projectsToRender.length}`; // Updated message
 
             if(projectsToRender.length === 0){
-                projectList.innerHTML = `<p class="text-center text-gray-500 py-4">No projects found.</p>`;
+                projectList.innerHTML = `<p class="text-center text-gray-500 py-4">ไม่พบโครงการ.</p>`; // Updated message
                 return;
             }
             projectsToRender.forEach(p => {
@@ -924,7 +1021,7 @@
         
         // NEW: Show Rename Modal
         function showRenameModal(oldName) {
-            renameModalTitle.textContent = `Rename Project '${oldName}'`;
+            renameModalTitle.textContent = `เปลี่ยนชื่อโครงการ '${oldName}'`; // Updated message
             renameInput.value = oldName;
             renameModal.style.display = "flex";
             renameInput.focus();
@@ -935,11 +1032,11 @@
                 const newName = renameInput.value.trim();
 
                 if (!newName || newName === "") {
-                    showMessage("New name cannot be empty.", "warning");
+                    showMessage("ชื่อใหม่ไม่สามารถว่างเปล่าได้.", "warning"); // Updated message
                     return;
                 }
                 if (newName === oldName) {
-                    showMessage("The new name is the same as the old name.", "info");
+                    showMessage("ชื่อใหม่เหมือนกับชื่อเดิม.", "info"); // Updated message
                     hideRenameModal();
                     return;
                 }
@@ -951,7 +1048,7 @@
                         oldProjectName: oldName,
                         newProjectName: newName
                     });
-                    showMessage(`Project '${oldName}' renamed to '${newName}' successfully.`, "success");
+                    showMessage(`เปลี่ยนชื่อโครงการ '${oldName}' เป็น '${newName}' สำเร็จแล้ว.`, "success"); // Updated message
                     await loadProjectsAndRender();
                 } catch (error) {
                     // Error is handled by apiRequest
@@ -968,7 +1065,7 @@
         function renderAdminProjectList(projects) {
             adminProjectList.innerHTML = "";
             if(projects.length === 0){
-                adminProjectList.innerHTML = `<p class="text-center text-gray-500">No projects yet.</p>`;
+                adminProjectList.innerHTML = `<p class="text-center text-gray-500">ยังไม่มีโครงการ.</p>`; // Updated message
                 return;
             }
             
@@ -989,13 +1086,13 @@
                 const deleteBtn = item.querySelector(".delete-btn");
                 if (isLastProject) {
                     deleteBtn.disabled = true;
-                    deleteBtn.title = "Cannot delete the last project.";
+                    deleteBtn.title = "ไม่สามารถลบโครงการสุดท้ายได้."; // Updated message
                     deleteBtn.classList.add("opacity-50", "cursor-not-allowed");
                 } else {
-                    deleteBtn.addEventListener("click", () => showConfirmation(`Confirm Project Deletion`, `Are you sure you want to delete the project <b>${p}</b>? <br><b class='text-red-600'>The project will be removed from the list but the data sheet will NOT be deleted.</b>`, async () => {
+                    deleteBtn.addEventListener("click", () => showConfirmation(`ยืนยันการลบโครงการ`, `คุณแน่ใจหรือไม่ว่าต้องการลบโครงการ <b>${p}</b>? <br><b class='text-red-600'>โครงการจะถูกลบออกจากรายการ แต่แผ่นข้อมูลจะไม่ถูกลบ.</b>`, async () => { // Updated message
                         try {
                             await postToAction({ action: "deleteProject", projectName: p });
-                             showMessage(`Project '${p}' removed successfully.`, 'success');
+                            showMessage(`ลบโครงการ '${p}' สำเร็จแล้ว.`, 'success'); // Updated message
                             await loadProjectsAndRender();
                         } catch(err) {
                             // Error is handled by apiRequest
@@ -1016,7 +1113,7 @@
                 renderProjectCards(allProjects); // Render all projects initially
                 renderAdminProjectList(allProjects);
             } catch(e){
-                console.error("Failed to load projects:", e);
+                console.error("ไม่สามารถโหลดโครงการได้:", e); // Updated message
                 renderProjectCards([]);
                 renderAdminProjectList([]);
             }
@@ -1053,7 +1150,7 @@
         async function initializeDashboardView() {
             initializeDashboardMap();
             const projects = await fetchProjects();
-            dashboardProjectSelector.innerHTML = '<option value="">-- Select a Project --</option>';
+            dashboardProjectSelector.innerHTML = '<option value="">-- เลือกโครงการ --</option>'; // Updated message
             projects.forEach(p => {
                 const option = document.createElement('option');
                 option.value = p;
@@ -1076,7 +1173,10 @@
             
             // Calculate KPIs
             kpiTotalCheckins.textContent = data.length;
-            const uniqueEmployees = new Set(data.map(d => String(d.EmployeeID).substring(0, 3)));
+            // The logic for unique employees is based on the first 3 digits of EmployeeID.
+            // If employee IDs are now up to 4 digits, this might need adjustment if a different grouping is desired.
+            // For now, it will continue to use the first 3 digits as per existing logic.
+            const uniqueEmployees = new Set(data.map(d => String(d.EmployeeID).substring(0, 3))); 
             kpiUniqueEmployees.textContent = uniqueEmployees.size;
 
             // Update Map
@@ -1091,7 +1191,8 @@
                     data.forEach(loc => {
                         if (loc.Latitude && loc.Longitude) {
                            const marker = L.marker([loc.Latitude, loc.Longitude]).addTo(markers);
-                           marker.bindPopup(`<b>${loc.EmployeeID}</b><br>${new Date(loc.Timestamp).toLocaleString("en-US")}`);
+                           // Removed Location Notes from popup
+                           marker.bindPopup(`<b>ID พนักงาน: ${loc.EmployeeID}</b><br>เวลา: ${new Date(loc.Timestamp).toLocaleString("en-US")}<br>ID แบบสอบถาม: ${loc.SurveyID || '-'}`); // Updated message
                         }
                     });
                     markers.addTo(dashboardMap);
@@ -1115,7 +1216,7 @@
             });
 
             if (Object.keys(employeeSummary).length > 0) {
-                 for (const prefix in employeeSummary) {
+                for (const prefix in employeeSummary) {
                     const summary = employeeSummary[prefix];
                     const row = document.createElement('tr');
                     row.innerHTML = `
@@ -1126,7 +1227,7 @@
                     dashboardSummaryTable.appendChild(row);
                 }
             } else {
-                dashboardSummaryTable.innerHTML = `<tr><td colspan="3" class="text-center text-gray-500">No summary data.</td></tr>`;
+                dashboardSummaryTable.innerHTML = `<tr><td colspan="3" class="text-center text-gray-500">ไม่มีข้อมูลสรุป.</td></tr>`; // Updated message
             }
 
 
@@ -1172,6 +1273,34 @@
             autocompleteList.classList.add("hidden");
         }
         
+        // --- CUSTOM LABEL FUNCTIONS --- //
+        function updateTrackerLabels() {
+            employeeIdLabelElement.textContent = customLabels.employeeId;
+            surveyIdLabelElement.textContent = customLabels.surveyId;
+            // Update placeholders if needed
+            employeeIdInput.placeholder = `${customLabels.employeeId} (4 หลัก)`; // Updated placeholder
+            surveyIdInput.placeholder = customLabels.surveyId;
+        }
+
+        function showCustomizeLabelsModal() {
+            employeeIdLabelInput.value = customLabels.employeeId;
+            surveyIdLabelInput.value = customLabels.surveyId;
+            customizeLabelsModal.style.display = "flex";
+        }
+
+        function hideCustomizeLabelsModal() {
+            customizeLabelsModal.style.display = "none";
+        }
+
+        function saveCustomLabels() {
+            customLabels.employeeId = employeeIdLabelInput.value.trim() || 'ID พนักงาน';
+            customLabels.surveyId = surveyIdLabelInput.value.trim() || 'ID แบบสอบถาม';
+            localStorage.setItem('customLabels', JSON.stringify(customLabels));
+            updateTrackerLabels(); // Apply changes to the UI
+            hideCustomizeLabelsModal();
+            showMessage("อัปเดตป้ายกำกับสำเร็จแล้ว!", "success"); // Updated message
+        }
+
         // --- EVENT LISTENERS SETUP --- //
         function setupEventListeners(){
             saveButton.addEventListener("click", saveLocationAction);
@@ -1206,7 +1335,10 @@
                 locationSearchInput.focus();
             });
             document.addEventListener("click", e => {
-                if (!e.target.closest(".search-wrapper")) hideAutocomplete();
+                // If click is outside autocomplete list and input, hide list
+                if (!e.target.closest("#autocompleteList") && !e.target.closest("#locationSearchInput") && autocompleteList.classList.contains("active")) {
+                    hideAutocomplete();
+                }
             });
             homeButton.addEventListener("click", () => {
                 showView("project-selection-view");
@@ -1257,7 +1389,7 @@
                     }
                 });
                 toggleIdFieldEdit(false);
-                showMessage("Names updated successfully.", "success");
+                showMessage("อัปเดตชื่อสำเร็จแล้ว.", "success"); // Updated message
             });
             idFieldSearchInput.addEventListener('input', (e) => {
                 const searchTerm = e.target.value.toLowerCase();
@@ -1308,12 +1440,12 @@
                         passwordModal.style.display = "none";
                         showView("admin-menu-view");
                     } else {
-                        showMessage(result.message || "Incorrect password", "error");
+                        showMessage(result.message || "รหัสผ่านไม่ถูกต้อง", "error"); // Updated message
                         passwordInput.focus();
                         passwordInput.select();
                     }
                 } catch (error) {
-                    showMessage("An error occurred during verification.", "error");
+                    showMessage("เกิดข้อผิดพลาดระหว่างการยืนยัน.", "error"); // Updated message
                     console.error("Password verification failed:", error);
                 } finally {
                     showSpinner(false);
@@ -1335,6 +1467,15 @@
                 renderProjectCards(filteredProjects);
             });
 
+            // NEW: Customize Labels Event Listeners
+            customizeLabelsBtn.addEventListener("click", showCustomizeLabelsModal);
+            cancelCustomizeLabelsBtn.addEventListener("click", hideCustomizeLabelsModal);
+            customizeLabelsForm.addEventListener("submit", (e) => {
+                e.preventDefault();
+                saveCustomLabels();
+            });
+
+
             setupAutocomplete();
         }
         
@@ -1343,6 +1484,7 @@
             setupEventListeners();
             loadProjectsAndRender();
             showView("project-selection-view");
+            updateTrackerLabels(); // Initial update of labels on load
         };
     </script>
 </body>
