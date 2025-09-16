@@ -32,7 +32,7 @@
         .main-card { 
             background-color: white; 
             border-radius: 1rem; /* Increased */
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.05);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -4px rgba(0, 0, 0, 0.1); /* Improved Shadow */
             transition: all 0.2s ease-in-out; 
             width: 100%;
         }
@@ -67,7 +67,7 @@
         }
         .action-row { 
             display: grid; 
-            grid-template-columns: repeat(2, 1fr);
+            grid-template-columns: repeat(3, 1fr);
             gap: 0.5rem;
         }
         .btn { 
@@ -94,6 +94,7 @@
         .table-scroll { max-height: calc(100vh - 20rem); overflow-y: auto; border: 1px solid var(--medium-gray); border-radius: 1rem; /* Increased */ }
         .hidden-col { display: none; }
         .pending-icon { color: var(--warning-color); margin-left: 4px; }
+        .dragging { opacity: 0.5; }
         
         /* Custom Admin Menu Button Color */
         #admin-menu-view .btn-primary {
@@ -173,6 +174,8 @@
                 <div id="admin-project-list" class="space-y-2">
                     <!-- Admin project list will be injected here -->
                 </div>
+                <!-- Save Order Button -->
+                <button id="save-project-order-btn" class="hidden btn btn-success w-full mt-4"><i class="fas fa-save"></i> Save Order</button>
             </div>
         </div>
 
@@ -184,6 +187,7 @@
                         <div class="space-x-2">
                             <button id="edit-id-field-btn" class="btn btn-secondary btn-icon text-sm" title="Edit Names"><i class="fas fa-pencil-alt"></i></button>
                             <button id="save-id-field-btn" class="hidden btn btn-success text-sm">Save</button>
+                            <button id="cancel-id-field-btn" class="hidden btn btn-secondary text-sm">Cancel</button> 
                         </div>
                     </div>
                     <div class="mb-4">
@@ -266,7 +270,7 @@
                 <div class="flex justify-between items-center">
                     <button id="home-button" class="btn btn-secondary btn-icon" title="Go Home"><i class="fas fa-home"></i></button>
                     <h3 id="tracker-title" class="text-lg sm:text-xl font-semibold text-gray-800 text-center truncate"></h3>
-                    <button id="customizeLabelsBtn" class="btn btn-secondary btn-icon" title="Customize Labels"><i class="fas fa-magic"></i></button> <!-- NEW: Customize Labels Button -->
+                    <button id="customizeLabelsBtn" class="btn btn-secondary btn-icon" title="Customize Labels"><i class="fas fa-magic"></i></button>
                 </div>
                 <div id="map"></div>
                 <div class="p-3 rounded-xl bg-blue-50 border border-blue-200">
@@ -279,15 +283,14 @@
                 <div class="space-y-3">
                     <div class="flex gap-2"> <!-- Flex container for Employee ID and Survey ID -->
                         <div class="input-row flex-grow">
-                            <label id="employeeIdLabel" for="employeeIdInput">ID พนักงาน</label> <!-- Updated label -->
+                            <label id="employeeIdLabel" for="employeeIdInput">ID พนักงาน</label>
                             <input id="employeeIdInput" type="text" placeholder="ID พนักงาน" />
                         </div>
                         <div class="input-row flex-grow">
-                            <label id="surveyIdLabel" for="surveyIdInput">ID แบบสอบถาม</label> <!-- Updated label -->
+                            <label id="surveyIdLabel" for="surveyIdInput">ID แบบสอบถาม</label>
                             <input id="surveyIdInput" type="text" placeholder="ID แบบสอบถาม" />
                         </div>
                     </div>
-                    <!-- Removed Location Notes input -->
                     <div class="input-row">
                         <label for="locationSearchInput">Search Location</label>
                         <div class="flex-1 flex">
@@ -306,15 +309,13 @@
                     <button id="saveButton" class="btn btn-success"><i class="fas fa-save"></i><span>Save</span></button>
                     <button id="uploadButton" class="btn btn-warning"><i class="fas fa-upload"></i><span>Upload</span></button>
                     <button id="exportCsvButton" class="btn btn-primary"><i class="fas fa-file-export"></i><span>Export</span></button>
-                    <button id="undoButton" class="btn btn-secondary"><i class="fas fa-undo"></i><span>Undo</span></button>
                 </div>
                 <div id="editActionButtons" class="action-row hidden"><button id="confirmEditButton" class="btn btn-warning">Save Edit</button><button id="cancelEditButton" class="btn btn-secondary">Cancel</button></div>
                 <div class="relative mt-4">
                     <div class="flex justify-between items-center bg-gray-50 p-3 rounded-t-xl border-b border-gray-200">
                         <h4 class="font-semibold text-sm">Saved Locations</h4>
-                        <button id="clearAllButton" class="text-xs btn btn-danger p-1">Clear All</button>
                     </div>
-                    <div class="table-scroll"><table class="w-full"><thead><tr><th>No.</th><th>ID พนักงาน</th><th>ID แบบสอบถาม</th><th>Timestamp</th><th>Map</th><th>Actions</th></tr></thead><tbody id="savedLocationsTableBody"></tbody></table></div> <!-- Updated table headers -->
+                    <div class="table-scroll"><table class="w-full"><thead><tr><th>No.</th><th id="tableHeaderEmployeeId">ID พนักงาน</th><th id="tableHeaderSurveyId">ID แบบสอบถาม</th><th>Timestamp</th><th>Map</th><th>Actions</th></tr></thead><tbody id="savedLocationsTableBody"></tbody></table></div>
                 </div>
             </div>
         </div>
@@ -324,10 +325,10 @@
     <div id="passwordModal" class="modal-overlay"><div class="modal-content"><h4 class="text-xl font-bold mb-4">Please enter password</h4><form id="password-form" class="space-y-4"><input id="password-input" type="password" class="w-full" required><div class="flex justify-end gap-2"><button type="button" id="cancel-password-btn" class="btn btn-secondary">Cancel</button><button type="submit" class="btn btn-primary">Confirm</button></div></form></div></div>
     <div id="confirmationModal" class="modal-overlay"><div class="modal-content"><h4 id="modalTitle" class="text-xl font-bold mb-4"></h4><p id="modalMessage" class="text-gray-700 mb-6"></p><div class="flex justify-center gap-4"><button id="confirmActionButton" class="btn btn-danger">Confirm</button><button id="cancelActionButton" class="btn btn-secondary">Cancel</button></div></div></div>
     
-    <!-- NEW: Rename Project Modal -->
+    <!-- Rename Project Modal -->
     <div id="renameModal" class="modal-overlay"><div class="modal-content"><h4 id="renameModalTitle" class="text-xl font-bold mb-4">Rename Project</h4><form id="rename-form" class="space-y-4"><input id="rename-input" type="text" class="w-full" required><div class="flex justify-end gap-2"><button type="button" id="cancel-rename-btn" class="btn btn-secondary">Cancel</button><button type="submit" class="btn btn-primary">Rename</button></div></form></div></div>
 
-    <!-- NEW: Customize Labels Modal -->
+    <!-- Customize Labels Modal -->
     <div id="customizeLabelsModal" class="modal-overlay">
         <div class="modal-content">
             <h4 class="text-xl font-bold mb-4">Customize Labels</h4>
@@ -353,7 +354,7 @@
     <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
     <script>
         // --- CONSTANTS AND GLOBAL VARIABLES --- //
-        const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbwxEnOfSfBZybpvSZL-i9FEODI5RViqyvYgwqZXjEyhO62DQ1_rrZa_PnhmOkeRwCZq5A/exec'; 
+        const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbyaiPM9Js-_JY_Ktc_jSjJThmpoPQz_cOUM6z5iWMzD5dwYIJ2ACFufD9qe_xrfaZnV7A/exec'; 
         
         let map, currentMarker = null, permanentMarkers = L.layerGroup(), permanentMarkersMap = {}, currentLat = null, currentLng = null, editingId = null, editingMarker = null;
         let dashboardMap;
@@ -384,10 +385,10 @@
             {id: 865, name: 'สุกัญญารัตน์ คชภูมิ'}
         ];
 
-        // NEW: Custom labels state
+        // Custom labels state
         let customLabels = JSON.parse(localStorage.getItem('customLabels')) || {
-            employeeId: 'ID พนักงาน', // Updated to Thai
-            surveyId: 'ID แบบสอบถาม' // Updated to Thai
+            employeeId: 'ID พนักงาน',
+            surveyId: 'ID แบบสอบถาม'
         };
 
         // --- DOM ELEMENT SELECTORS --- //
@@ -407,8 +408,7 @@
             messageBox = document.getElementById("messageBox"),
             savedLocationsTableBody = document.getElementById("savedLocationsTableBody"),
             employeeIdInput = document.getElementById("employeeIdInput"),
-            surveyIdInput = document.getElementById("surveyIdInput"), // Survey ID Input
-            // Removed locationNotesInput
+            surveyIdInput = document.getElementById("surveyIdInput"),
             locationSearchInput = document.getElementById("locationSearchInput"),
             clearSearchIcon = document.getElementById("clearSearchIcon"),
             autocompleteList = document.getElementById("autocompleteList"),
@@ -425,9 +425,7 @@
             currentLocationButton = document.getElementById("currentLocationButton"),
             saveButton = document.getElementById("saveButton"),
             uploadButton = document.getElementById("uploadButton"),
-            clearAllButton = document.getElementById("clearAllButton"),
             exportCsvButton = document.getElementById("exportCsvButton"),
-            undoButton = document.getElementById("undoButton"),
             manageProjectsBtn = document.getElementById("manage-projects-btn"),
             backToMenuBtn = document.getElementById("back-to-menu-btn"),
             menuBackToSelectionBtn = document.getElementById("menu-back-to-selection-btn"),
@@ -454,21 +452,19 @@
             passwordForm = document.getElementById("password-form"),
             passwordInput = document.getElementById("password-input"),
             cancelPasswordBtn = document.getElementById("cancel-password-btn"),
-            // New selectors for Rename Modal
             renameModal = document.getElementById("renameModal"),
             renameModalTitle = document.getElementById("renameModalTitle"),
             renameForm = document.getElementById("rename-form"),
             renameInput = document.getElementById("rename-input"),
             cancelRenameBtn = document.getElementById("cancel-rename-btn"),
-            // NEW: Customize Labels selectors
             customizeLabelsBtn = document.getElementById("customizeLabelsBtn"),
             customizeLabelsModal = document.getElementById("customizeLabelsModal"),
             customizeLabelsForm = document.getElementById("customize-labels-form"),
             employeeIdLabelInput = document.getElementById("employeeIdLabelInput"),
             surveyIdLabelInput = document.getElementById("surveyIdLabelInput"),
             cancelCustomizeLabelsBtn = document.getElementById("cancelCustomizeLabelsBtn"),
-            employeeIdLabelElement = document.getElementById("employeeIdLabel"), // Reference to the actual label element
-            surveyIdLabelElement = document.getElementById("surveyIdLabel"); // Reference to the actual label element
+            employeeIdLabelElement = document.getElementById("employeeIdLabel"),
+            surveyIdLabelElement = document.getElementById("surveyIdLabel");
 
 
         // --- LEAFLET ICONS --- //
@@ -486,9 +482,8 @@
                      if (dashboardMap) dashboardMap.invalidateSize();
                  }, 10);
              }
-            // Update labels when tracker view is shown
-            if (viewId === 'tracker-view') {
-                updateTrackerLabels();
+            if (viewId === 'tracker-view' || viewId === 'project-selection-view') {
+                updateAllLabels();
             }
         }
 
@@ -575,7 +570,7 @@
             locations.forEach(loc => {
                 if (loc.Latitude && loc.Longitude) {
                     const icon = loc.isPending ? greenIcon : blueIcon;
-                    const marker = L.marker([loc.Latitude, loc.Longitude], { icon: icon }).addTo(permanentMarkers).bindPopup(`<b>Employee:</b> ${loc.EmployeeID}<br><b>Time:</b> ${new Date(loc.Timestamp).toLocaleString("en-US")}`);
+                    const marker = L.marker([loc.Latitude, loc.Longitude], { icon: icon }).addTo(permanentMarkers).bindPopup(`<b>${customLabels.employeeId}:</b> ${loc.EmployeeID}<br><b>Time:</b> ${new Date(loc.Timestamp).toLocaleString("en-US")}`);
                     permanentMarkersMap[loc.ID] = marker;
                 }
             });
@@ -587,7 +582,7 @@
                 savedLocationsTableBody.innerHTML = `<tr><td colspan="6" class="py-4 px-4 text-gray-500 text-center">No saved locations yet</td></tr>`; // Updated colspan
                 return;
             }
-            const sortedLocations = locations.slice().sort((a, b) => new Date(a.Timestamp) - new Date(b.Timestamp)); // จากเก่า -> ใหม่
+            const sortedLocations = locations.slice().sort((a, b) => new Date(a.Timestamp) - new Date(b.Timestamp)); // From old to new
             sortedLocations.forEach((loc, index) => {
                 const row = document.createElement("tr");
                 row.dataset.id = loc.ID;
@@ -618,10 +613,13 @@
         async function apiRequest(url, options = {}) {
             showSpinner(true);
             try {
+                if (url.includes('YOUR_NEW_GOOGLE_SCRIPT_URL_HERE')) {
+                    throw new Error("Please update the WEB_APP_URL in the script.");
+                }
                 const response = await fetch(url, options);
                 if (!response.ok) throw new Error(`Server error: ${response.status}`);
                 const result = await response.json();
-                if (!result.success) throw new Error(result.message || "An unknown error occurred.");
+                if (result.status && result.status !== 'success' && !result.success) throw new Error(result.message || "An unknown error occurred.");
                 return result;
             } catch (error) {
                 console.error("API Request Failed:", error);
@@ -684,29 +682,18 @@
                 return;
             }
             const empId = employeeIdInput.value.trim();
-            const surveyId = surveyIdInput.value.trim(); // Get Survey ID
+            const surveyId = surveyIdInput.value.trim();
 
-            // Updated regex for 1-4 digits
             const idRegex = /^\d{1,4}$/; 
             if(!idRegex.test(empId)) {
-                showMessage("ID พนักงานต้องเป็นตัวเลข 1-4 หลัก.", "warning"); // Updated message
+                showMessage("ID พนักงานต้องเป็นตัวเลข 1-4 หลัก.", "warning");
                 return;
             }
-
-            // REMOVED: Duplicate check for Employee ID
-            /*
-            const isDuplicate = savedLocations.some(loc => String(loc.EmployeeID) === empId) || pendingLocations.some(loc => String(loc.EmployeeID) === empId);
-            if (isDuplicate) {
-                showMessage("This Employee ID is already in use in this project.", "error");
-                return;
-            }
-            */
             
             const newLoc = {
                 ID: `pending_${Date.now()}`,
                 EmployeeID: empId,
-                SurveyID: surveyId, // Include Survey ID
-                // Removed LocationNotes
+                SurveyID: surveyId,
                 Latitude: currentLat,
                 Longitude: currentLng,
                 Timestamp: new Date().toISOString(),
@@ -715,26 +702,16 @@
             };
 
             pendingLocations.push(newLoc);
-            showMessage(`บันทึก ID พนักงาน ${empId} แล้ว. กรุณากดอัปโหลดเพื่อส่งข้อมูล.`, "success"); // Updated message
+            showMessage(`บันทึก ID พนักงาน ${empId} แล้ว. กรุณากดอัปโหลดเพื่อส่งข้อมูล.`, "success");
             employeeIdInput.value = "";
-            surveyIdInput.value = ""; // Clear Survey ID input
+            surveyIdInput.value = "";
             hideCurrentMarker();
-            renderAll();
-        }
-        
-        function undoLastSave() {
-            if (pendingLocations.length === 0) {
-                showMessage("ไม่มีรายการที่เพิ่งบันทึกให้ยกเลิก", "warning"); // Updated message
-                return;
-            }
-            const undoneLocation = pendingLocations.pop();
-            showMessage(`ยกเลิกการบันทึกสำหรับ ID พนักงาน: ${undoneLocation.EmployeeID}`, "info"); // Updated message
             renderAll();
         }
 
         async function uploadPendingLocations() {
             if (pendingLocations.length === 0) {
-                showMessage("ไม่มีข้อมูลให้อัปโหลด", "info"); // Updated message
+                showMessage("ไม่มีข้อมูลให้อัปโหลด", "info");
                 return;
             }
 
@@ -747,8 +724,7 @@
                     project: currentProjectName,
                     data: {
                         name: loc.EmployeeID,
-                        surveyId: loc.SurveyID || '', // Include Survey ID
-                        // Removed notes
+                        surveyId: loc.SurveyID || '',
                         lat: loc.Latitude,
                         lng: loc.Longitude
                     }
@@ -756,43 +732,38 @@
                 
                 try {
                     const result = await postToAction(payload);
-                    if (result && result.success) {
+                    if (result && (result.success || result.status === 'success')) {
                         successCount++;
                     }
                 } catch (error) {
-                    showMessage(`การอัปโหลด ID พนักงาน ${loc.EmployeeID} ล้มเหลว. อัปโหลดสำเร็จ ${successCount} รายการ.`, "error"); // Updated message
+                    showMessage(`การอัปโหลด ID พนักงาน ${loc.EmployeeID} ล้มเหลว. อัปโหลดสำเร็จ ${successCount} รายการ.`, "error");
                     await fetchLocations(currentProjectName);
                     return; 
                 }
             }
 
-            showMessage(`อัปโหลดสำเร็จ ${successCount} จาก ${totalToUpload} รายการ!`, "success"); // Updated message
+            showMessage(`อัปโหลดสำเร็จ ${successCount} จาก ${totalToUpload} รายการ!`, "success");
             await fetchLocations(currentProjectName);
         }
 
         function editLocation(id){
-            // Find the location in EITHER pending or saved arrays
             let loc = pendingLocations.find(l => String(l.ID) === String(id));
             if (!loc) {
                 loc = savedLocations.find(l => String(l.ID) === String(id));
             }
 
             if (!loc) return;
-
-            if (editingId) cancelEdit(); // Cancel any other ongoing edit
+            if (editingId) cancelEdit(); 
 
             editingId = id;
 
-            // Handle map markers
             if (permanentMarkersMap[id]) permanentMarkers.removeLayer(permanentMarkersMap[id]);
             editingMarker = L.marker([loc.Latitude, loc.Longitude], { icon: yellowIcon, draggable: true }).addTo(map);
             editingMarker.on("dragend", e => updateCurrentMarker(e.target.getLatLng().lat, e.target.getLatLng().lng));
             
-            // Update UI
             map.setView([loc.Latitude, loc.Longitude], map.getZoom() || 14);
             employeeIdInput.value = loc.EmployeeID;
-            surveyIdInput.value = loc.SurveyID || ''; // Populate Survey ID
-            // Removed locationNotesInput.value = loc.LocationNotes || '';
+            surveyIdInput.value = loc.SurveyID || '';
             updateCurrentMarker(loc.Latitude, loc.Longitude);
             editActionButtonsDiv.classList.remove("hidden");
             normalActionButtonsDiv.classList.add("hidden");
@@ -802,57 +773,41 @@
             if(!editingId) return;
 
             const empId = employeeIdInput.value.trim();
-            const surveyId = surveyIdInput.value.trim(); // Get Survey ID
+            const surveyId = surveyIdInput.value.trim();
 
-            // Updated regex for 1-4 digits
             const idRegex = /^\d{1,4}$/;
             if(!idRegex.test(empId)) {
-                showMessage("ID พนักงานต้องเป็นตัวเลข 1-4 หลัก.", "warning"); // Updated message
+                showMessage("ID พนักงานต้องเป็นตัวเลข 1-4 หลัก.", "warning");
                 return;
             }
 
-            // REMOVED: Duplicate check for Employee ID
-            /*
-            const isDuplicate = savedLocations.some(loc => String(loc.EmployeeID) === empId && String(loc.ID) !== String(editingId)) || 
-                                pendingLocations.some(loc => String(loc.EmployeeID) === empId && String(loc.ID) !== String(editingId));
-            if(isDuplicate) {
-                showMessage("This Employee ID is already in use by another entry in this project.", "error");
-                return;
-            }
-            */
-
-            // *** NEW LOGIC: Check if it's a pending item or a saved item ***
             if (String(editingId).startsWith('pending_')) {
-                // It's a pending item, just update it locally
                 const locToUpdate = pendingLocations.find(l => String(l.ID) === String(editingId));
                 if (locToUpdate) {
                     locToUpdate.EmployeeID = empId;
-                    locToUpdate.SurveyID = surveyId; // Update Survey ID
-                    // Removed LocationNotes
+                    locToUpdate.SurveyID = surveyId;
                     locToUpdate.Latitude = currentLat;
                     locToUpdate.Longitude = currentLng;
                     locToUpdate.Timestamp = new Date().toISOString();
                     locToUpdate.GoogleMapsLink = `https://maps.google.com/?q=${currentLat},${currentLng}`;
                 }
-                showMessage(`อัปเดตรายการที่รอดำเนินการสำหรับ ID พนักงาน ${empId} สำเร็จแล้ว`, "success"); // Updated message
-                cancelEdit(); // This will re-render everything
+                showMessage(`อัปเดตรายการที่รอดำเนินการสำหรับ ID พนักงาน ${empId} สำเร็จแล้ว`, "success");
+                cancelEdit();
             } else {
-                // It's a saved item, send update to the server
                 const payload = { 
                     action: "update", 
                     id: editingId, 
                     project: currentProjectName, 
                     data: { 
                         name: empId, 
-                        surveyId: surveyId, // Include Survey ID
-                        // Removed notes
+                        surveyId: surveyId,
                         lat: currentLat, 
                         lng: currentLng 
                     } 
                 };
                 try {
                     const result = await postToAction(payload);
-                    if(result && result.success){
+                    if(result && (result.success || result.status === 'success')){
                         cancelEdit();
                         await fetchLocations(currentProjectName);
                     }
@@ -868,15 +823,13 @@
             editingId = null;
             hideCurrentMarker();
             employeeIdInput.value = "";
-            surveyIdInput.value = ""; // Clear Survey ID input
-            // Removed locationNotesInput.value = "";
+            surveyIdInput.value = "";
             editActionButtonsDiv.classList.add("hidden");
             normalActionButtonsDiv.classList.remove("hidden");
-            renderAll(); // Re-render to restore original markers and table
+            renderAll();
         }
         
         async function deleteLocation(id, name) {
-            // Find the location in EITHER pending or saved arrays
             const isPending = String(id).startsWith('pending_');
             const loc = isPending 
                 ? pendingLocations.find(l => String(l.ID) === String(id))
@@ -884,41 +837,19 @@
 
             if (!loc) return;
 
-            showConfirmation("ยืนยันการลบ", `คุณแน่ใจหรือไม่ว่าต้องการลบรายการสำหรับ <b>ID พนักงาน ${name}</b>?`, async () => { // Updated message
+            showConfirmation("ยืนยันการลบ", `คุณแน่ใจหรือไม่ว่าต้องการลบรายการสำหรับ <b>ID พนักงาน ${name}</b>?`, async () => {
                 if (isPending) {
-                    // Just remove from the local pending array
                     pendingLocations = pendingLocations.filter(p => String(p.ID) !== String(id));
                     renderAll();
-                    showMessage("ลบรายการที่รอดำเนินการแล้ว", "info"); // Updated message
+                    showMessage("ลบรายการที่รอดำเนินการแล้ว", "info");
                 } else {
-                    // Send delete request to the server
                     const payload = { action: "delete", project: currentProjectName, id: id };
                     try {
                         const result = await postToAction(payload);
-                        if (result && result.success) await fetchLocations(currentProjectName);
+                        if (result && (result.success || result.status === 'success')) await fetchLocations(currentProjectName);
                     } catch (error) { /* Handled */ }
                 }
                 hideConfirmation();
-            });
-        }
-        
-        function requestClearAll() {
-            if (savedLocations.length === 0 && pendingLocations.length === 0) return showMessage("ไม่มีข้อมูลให้ล้าง", "warning"); // Updated message
-            
-            let message = `คุณแน่ใจหรือไม่ว่าต้องการลบข้อมูลที่<b>บันทึกแล้วทั้งหมด</b>สำหรับโปรเจกต์ <b>${currentProjectName}</b>?`; // Updated message
-            if (pendingLocations.length > 0) {
-                message += `<br><br>นี่จะล้างรายการที่<b>รอดำเนินการ</b> ${pendingLocations.length} รายการด้วย.`; // Updated message
-            }
-            message += `<br><br><b class='text-red-600'>การดำเนินการนี้ไม่สามารถย้อนกลับได้.</b>`; // Updated message
-
-
-            showConfirmation("ยืนยันการล้างทั้งหมด", message, async () => { // Updated message
-                pendingLocations = [];
-                const payload = { action: "deleteAll", project: currentProjectName };
-                try {
-                    const result = await postToAction(payload);
-                    if (result && result.success) await fetchLocations(currentProjectName);
-                } catch (error) { renderAll(); }
             });
         }
         
@@ -930,7 +861,7 @@
                     updateCurrentMarker(pos.coords.latitude, pos.coords.longitude);
                     map.setView([pos.coords.latitude, pos.coords.longitude], 15);
                 },
-                () => showMessage("ไม่สามารถรับตำแหน่งปัจจุบันได้", "error"), // Updated message
+                () => showMessage("ไม่สามารถรับตำแหน่งปัจจุบันได้", "error"),
                 { enableHighAccuracy: true }
             );
         }
@@ -949,12 +880,12 @@
                         locationSearchInput.value = display_name;
                         hideAutocomplete();
                     } else {
-                        showMessage("ไม่พบตำแหน่ง", "warning"); // Updated message
+                        showMessage("ไม่พบตำแหน่ง", "warning");
                     }
                 })
                 .catch(err => {
                     console.error("Search Error:", err);
-                    showMessage("เกิดข้อผิดพลาดระหว่างการค้นหา", "error"); // Updated message
+                    showMessage("เกิดข้อผิดพลาดระหว่างการค้นหา", "error");
                 })
                 .finally(() => showSpinner(false));
         }
@@ -962,24 +893,21 @@
         // --- UTILITY & PROJECT MANAGEMENT --- //
         function exportToCSV() {
             const allLocations = [...savedLocations, ...pendingLocations];
-            if (allLocations.length === 0) return showMessage("ไม่มีข้อมูลให้ส่งออก!", "warning"); // Updated message
+            if (allLocations.length === 0) return showMessage("ไม่มีข้อมูลให้ส่งออก!", "warning");
             
-            // Updated headers for new fields
-            const headers = "EmployeeID,SurveyID,Latitude,Longitude,Timestamp,GoogleMapsLink,Status\n"; // Removed LocationNotes header
+            const headers = `${customLabels.employeeId},${customLabels.surveyId},Latitude,Longitude,Timestamp,GoogleMapsLink,Status\n`;
             let csvContent = "data:text/csv;charset=utf-8,\uFEFF" + headers;
             
             allLocations.forEach(loc => {
                 const status = loc.isPending ? "Pending Upload" : "Saved";
-                // Ensure values are properly quoted and handled for CSV
                 const empId = `"${(loc.EmployeeID || '').replace(/"/g, '""')}"`;
                 const surveyId = `"${(loc.SurveyID || '').replace(/"/g, '""')}"`;
-                // Removed notes
                 const latitude = loc.Latitude;
                 const longitude = loc.Longitude;
                 const timestamp = new Date(loc.Timestamp).toISOString();
                 const googleMapsLink = `"${(loc.GoogleMapsLink || '').replace(/"/g, '""')}"`;
 
-                const row = [empId, surveyId, latitude, longitude, timestamp, googleMapsLink, status].join(","); // Removed notes from row
+                const row = [empId, surveyId, latitude, longitude, timestamp, googleMapsLink, status].join(",");
                 csvContent += row + "\n";
             });
             const link = document.createElement("a");
@@ -1000,10 +928,10 @@
         
         function renderProjectCards(projectsToRender) {
             projectList.innerHTML = "";
-            projectCount.textContent = `All Project ${projectsToRender.length}`; // Updated message
+            projectCount.textContent = `All Project ${projectsToRender.length}`;
 
             if(projectsToRender.length === 0){
-                projectList.innerHTML = `<p class="text-center text-gray-500 py-4">ไม่พบโครงการ.</p>`; // Updated message
+                projectList.innerHTML = `<p class="text-center text-gray-500 py-4">ไม่พบโครงการ.</p>`;
                 return;
             }
             projectsToRender.forEach(p => {
@@ -1019,9 +947,8 @@
             });
         }
         
-        // NEW: Show Rename Modal
         function showRenameModal(oldName) {
-            renameModalTitle.textContent = `เปลี่ยนชื่อโครงการ '${oldName}'`; // Updated message
+            renameModalTitle.textContent = `เปลี่ยนชื่อโครงการ '${oldName}'`;
             renameInput.value = oldName;
             renameModal.style.display = "flex";
             renameInput.focus();
@@ -1032,11 +959,11 @@
                 const newName = renameInput.value.trim();
 
                 if (!newName || newName === "") {
-                    showMessage("ชื่อใหม่ไม่สามารถว่างเปล่าได้.", "warning"); // Updated message
+                    showMessage("ชื่อใหม่ไม่สามารถว่างเปล่าได้.", "warning");
                     return;
                 }
                 if (newName === oldName) {
-                    showMessage("ชื่อใหม่เหมือนกับชื่อเดิม.", "info"); // Updated message
+                    showMessage("ชื่อใหม่เหมือนกับชื่อเดิม.", "info");
                     hideRenameModal();
                     return;
                 }
@@ -1048,24 +975,23 @@
                         oldProjectName: oldName,
                         newProjectName: newName
                     });
-                    showMessage(`เปลี่ยนชื่อโครงการ '${oldName}' เป็น '${newName}' สำเร็จแล้ว.`, "success"); // Updated message
+                    showMessage(`เปลี่ยนชื่อโครงการ '${oldName}' เป็น '${newName}' สำเร็จแล้ว.`, "success");
                     await loadProjectsAndRender();
-                } catch (error) {
-                    // Error is handled by apiRequest
-                }
+                } catch (error) { /* Handled by apiRequest */ }
             };
         }
 
         function hideRenameModal() {
             renameModal.style.display = 'none';
-            renameForm.onsubmit = null; // Clean up listener
+            renameForm.onsubmit = null;
         }
 
 
         function renderAdminProjectList(projects) {
             adminProjectList.innerHTML = "";
+            document.getElementById('save-project-order-btn').classList.add('hidden');
             if(projects.length === 0){
-                adminProjectList.innerHTML = `<p class="text-center text-gray-500">ยังไม่มีโครงการ.</p>`; // Updated message
+                adminProjectList.innerHTML = `<p class="text-center text-gray-500">ยังไม่มีโครงการ.</p>`;
                 return;
             }
             
@@ -1073,9 +999,14 @@
 
             projects.forEach(p => {
                 const item = document.createElement("div");
-                item.className = "flex justify-between items-center p-2 border rounded-lg bg-gray-50";
+                item.className = "project-admin-item flex justify-between items-center p-2 border rounded-lg bg-gray-50 cursor-grab";
+                item.draggable = true;
+                item.dataset.projectName = p;
                 item.innerHTML = `
-                    <span class="flex-grow">${p}</span>
+                    <div class="flex items-center space-x-3">
+                        <i class="fas fa-grip-vertical text-gray-400 pointer-events-none"></i>
+                        <span class="flex-grow pointer-events-none">${p}</span>
+                    </div>
                     <div class="flex items-center space-x-1 flex-shrink-0">
                         <button class="rename-btn btn btn-secondary btn-icon text-xs p-1" title="Rename"><i class="fas fa-pencil-alt"></i></button>
                         <button class="delete-btn btn btn-danger btn-icon text-xs p-1" title="Delete"><i class="fas fa-trash"></i></button>
@@ -1086,20 +1017,15 @@
                 const deleteBtn = item.querySelector(".delete-btn");
                 if (isLastProject) {
                     deleteBtn.disabled = true;
-                    deleteBtn.title = "ไม่สามารถลบโครงการสุดท้ายได้."; // Updated message
+                    deleteBtn.title = "ไม่สามารถลบโครงการสุดท้ายได้.";
                     deleteBtn.classList.add("opacity-50", "cursor-not-allowed");
                 } else {
-                    deleteBtn.addEventListener("click", () => showConfirmation(`ยืนยันการลบโครงการ`, `คุณแน่ใจหรือไม่ว่าต้องการลบโครงการ <b>${p}</b>? <br><b class='text-red-600'>โครงการจะถูกลบออกจากรายการ แต่แผ่นข้อมูลจะไม่ถูกลบ.</b>`, async () => { // Updated message
+                    deleteBtn.addEventListener("click", async () => {
                         try {
                             await postToAction({ action: "deleteProject", projectName: p });
-                            showMessage(`ลบโครงการ '${p}' สำเร็จแล้ว.`, 'success'); // Updated message
                             await loadProjectsAndRender();
-                        } catch(err) {
-                            // Error is handled by apiRequest
-                        } finally {
-                            hideConfirmation();
-                        }
-                    }));
+                        } catch(err) { /* Handled by apiRequest */ } 
+                    });
                 }
                 
                 adminProjectList.appendChild(item);
@@ -1109,11 +1035,11 @@
         async function loadProjectsAndRender(){
             try {
                 const projects = await fetchProjects();
-                allProjects = projects; // Store the full list
-                renderProjectCards(allProjects); // Render all projects initially
+                allProjects = projects; 
+                renderProjectCards(allProjects);
                 renderAdminProjectList(allProjects);
             } catch(e){
-                console.error("ไม่สามารถโหลดโครงการได้:", e); // Updated message
+                console.error("ไม่สามารถโหลดโครงการได้:", e);
                 renderProjectCards([]);
                 renderAdminProjectList([]);
             }
@@ -1143,6 +1069,7 @@
             idFieldSearchInput.value = '';
             editIdFieldBtn.classList.toggle('hidden', isEditing);
             saveIdFieldBtn.classList.toggle('hidden', !isEditing);
+            cancelIdFieldBtn.classList.toggle('hidden', !isEditing); // Also toggle cancel button
             renderIdFieldTable();
         }
         
@@ -1150,7 +1077,7 @@
         async function initializeDashboardView() {
             initializeDashboardMap();
             const projects = await fetchProjects();
-            dashboardProjectSelector.innerHTML = '<option value="">-- เลือกโครงการ --</option>'; // Updated message
+            dashboardProjectSelector.innerHTML = '<option value="">-- เลือกโครงการ --</option>';
             projects.forEach(p => {
                 const option = document.createElement('option');
                 option.value = p;
@@ -1171,15 +1098,10 @@
             
             const data = await fetchProjectData(projectName);
             
-            // Calculate KPIs
             kpiTotalCheckins.textContent = data.length;
-            // The logic for unique employees is based on the first 3 digits of EmployeeID.
-            // If employee IDs are now up to 4 digits, this might need adjustment if a different grouping is desired.
-            // For now, it will continue to use the first 3 digits as per existing logic.
             const uniqueEmployees = new Set(data.map(d => String(d.EmployeeID).substring(0, 3))); 
             kpiUniqueEmployees.textContent = uniqueEmployees.size;
 
-            // Update Map
             if(dashboardMap) {
                 dashboardMap.eachLayer(layer => {
                     if (layer instanceof L.Marker) {
@@ -1191,8 +1113,8 @@
                     data.forEach(loc => {
                         if (loc.Latitude && loc.Longitude) {
                            const marker = L.marker([loc.Latitude, loc.Longitude]).addTo(markers);
-                           // Removed Location Notes from popup
-                           marker.bindPopup(`<b>ID พนักงาน: ${loc.EmployeeID}</b><br>เวลา: ${new Date(loc.Timestamp).toLocaleString("en-US")}<br>ID แบบสอบถาม: ${loc.SurveyID || '-'}`); // Updated message
+                           // UPDATED: Use customLabels for popup
+                           marker.bindPopup(`<b>${customLabels.employeeId}: ${loc.EmployeeID}</b><br>เวลา: ${new Date(loc.Timestamp).toLocaleString("en-US")}<br>${customLabels.surveyId}: ${loc.SurveyID || '-'}`);
                         }
                     });
                     markers.addTo(dashboardMap);
@@ -1200,7 +1122,6 @@
                 }
             }
             
-            // Update Employee Summary Table
             dashboardSummaryTable.innerHTML = "";
             const employeeSummary = {};
 
@@ -1227,7 +1148,7 @@
                     dashboardSummaryTable.appendChild(row);
                 }
             } else {
-                dashboardSummaryTable.innerHTML = `<tr><td colspan="3" class="text-center text-gray-500">ไม่มีข้อมูลสรุป.</td></tr>`; // Updated message
+                dashboardSummaryTable.innerHTML = `<tr><td colspan="3" class="text-center text-gray-500">ไม่มีข้อมูลสรุป.</td></tr>`;
             }
 
 
@@ -1274,12 +1195,18 @@
         }
         
         // --- CUSTOM LABEL FUNCTIONS --- //
-        function updateTrackerLabels() {
+        function updateAllLabels() {
+            // Form labels
             employeeIdLabelElement.textContent = customLabels.employeeId;
             surveyIdLabelElement.textContent = customLabels.surveyId;
-            // Update placeholders if needed
-            employeeIdInput.placeholder = `${customLabels.employeeId}`; // Updated placeholder
+            // Input placeholders
+            employeeIdInput.placeholder = customLabels.employeeId;
             surveyIdInput.placeholder = customLabels.surveyId;
+            // Tracker table headers
+            const tableHeaderEmployeeId = document.getElementById('tableHeaderEmployeeId');
+            if (tableHeaderEmployeeId) tableHeaderEmployeeId.textContent = customLabels.employeeId;
+            const tableHeaderSurveyId = document.getElementById('tableHeaderSurveyId');
+            if (tableHeaderSurveyId) tableHeaderSurveyId.textContent = customLabels.surveyId;
         }
 
         function showCustomizeLabelsModal() {
@@ -1296,23 +1223,20 @@
             customLabels.employeeId = employeeIdLabelInput.value.trim() || 'ID พนักงาน';
             customLabels.surveyId = surveyIdLabelInput.value.trim() || 'ID แบบสอบถาม';
             localStorage.setItem('customLabels', JSON.stringify(customLabels));
-            updateTrackerLabels(); // Apply changes to the UI
+            updateAllLabels(); // Apply changes to the UI
             hideCustomizeLabelsModal();
-            showMessage("อัปเดตป้ายกำกับสำเร็จแล้ว!", "success"); // Updated message
+            showMessage("อัปเดตป้ายกำกับสำเร็จแล้ว!", "success");
         }
 
         // --- EVENT LISTENERS SETUP --- //
         function setupEventListeners(){
             saveButton.addEventListener("click", saveLocationAction);
             uploadButton.addEventListener("click", uploadPendingLocations);
-            clearAllButton.addEventListener("click", requestClearAll);
             exportCsvButton.addEventListener("click", exportToCSV);
-            undoButton.addEventListener("click", undoLastSave);
             
             confirmEditButton.addEventListener("click", confirmEdit);
             cancelEditButton.addEventListener("click", cancelEdit);
 
-            // Modal Buttons
             confirmActionButton.addEventListener("click", () => {
                 if (typeof confirmActionCallback === 'function') {
                     confirmActionCallback();
@@ -1335,7 +1259,6 @@
                 locationSearchInput.focus();
             });
             document.addEventListener("click", e => {
-                // If click is outside autocomplete list and input, hide list
                 if (!e.target.closest("#autocompleteList") && !e.target.closest("#locationSearchInput") && autocompleteList.classList.contains("active")) {
                     hideAutocomplete();
                 }
@@ -1379,6 +1302,7 @@
             
             // --- ID Field Listeners --- //
             editIdFieldBtn.addEventListener('click', () => toggleIdFieldEdit(true));
+            cancelIdFieldBtn.addEventListener('click', () => toggleIdFieldEdit(false)); 
             saveIdFieldBtn.addEventListener('click', () => {
                 const inputs = idFieldTableBody.querySelectorAll('input[type="text"]');
                 inputs.forEach(input => {
@@ -1389,7 +1313,7 @@
                     }
                 });
                 toggleIdFieldEdit(false);
-                showMessage("อัปเดตชื่อสำเร็จแล้ว.", "success"); // Updated message
+                showMessage("อัปเดตชื่อสำเร็จแล้ว.", "success");
             });
             idFieldSearchInput.addEventListener('input', (e) => {
                 const searchTerm = e.target.value.toLowerCase();
@@ -1412,43 +1336,29 @@
                 }
             });
 
-            // --- UPDATED PASSWORD FORM LOGIC ---
             passwordForm.addEventListener("submit", async (e) => {
                 e.preventDefault();
                 const enteredPassword = passwordInput.value;
                 if (!enteredPassword) return;
                 
-                showSpinner(true);
                 passwordInput.value = ""; 
 
                 try {
-                    const payload = { 
+                    const result = await postToAction({ 
                         action: "verifyPassword", 
                         password: enteredPassword 
-                    };
-                    const response = await fetch(WEB_APP_URL, {
-                        method: "POST",
-                        mode: "cors",
-                        cache: "no-cache",
-                        headers: { "Content-Type": "text/plain;charset=utf-8" },
-                        body: JSON.stringify(payload)
                     });
 
-                    const result = await response.json();
-
-                    if (result.success) {
+                    if (result.success || result.status === 'success') {
                         passwordModal.style.display = "none";
                         showView("admin-menu-view");
                     } else {
-                        showMessage(result.message || "รหัสผ่านไม่ถูกต้อง", "error"); // Updated message
+                        showMessage(result.message || "รหัสผ่านไม่ถูกต้อง", "error");
                         passwordInput.focus();
                         passwordInput.select();
                     }
                 } catch (error) {
-                    showMessage("เกิดข้อผิดพลาดระหว่างการยืนยัน.", "error"); // Updated message
                     console.error("Password verification failed:", error);
-                } finally {
-                    showSpinner(false);
                 }
             });
             
@@ -1457,17 +1367,14 @@
                 passwordInput.value = "";
             });
 
-            // New Listener for Rename Modal
             cancelRenameBtn.addEventListener("click", hideRenameModal);
 
-            // New Listener for Project Search
             projectSearchInput.addEventListener('input', (e) => {
                 const searchTerm = e.target.value.toLowerCase();
                 const filteredProjects = allProjects.filter(p => p.toLowerCase().includes(searchTerm));
                 renderProjectCards(filteredProjects);
             });
 
-            // NEW: Customize Labels Event Listeners
             customizeLabelsBtn.addEventListener("click", showCustomizeLabelsModal);
             cancelCustomizeLabelsBtn.addEventListener("click", hideCustomizeLabelsModal);
             customizeLabelsForm.addEventListener("submit", (e) => {
@@ -1475,6 +1382,70 @@
                 saveCustomLabels();
             });
 
+            // --- DRAG AND DROP LISTENERS FOR PROJECT REORDERING ---
+            const adminProjectListContainer = document.getElementById('admin-project-list');
+            let draggedItem = null;
+
+            adminProjectListContainer.addEventListener('dragstart', e => {
+                if (e.target.classList.contains('project-admin-item')) {
+                    draggedItem = e.target;
+                    setTimeout(() => {
+                        draggedItem.classList.add('dragging');
+                    }, 0);
+                }
+            });
+
+            adminProjectListContainer.addEventListener('dragend', e => {
+                if (draggedItem) {
+                    draggedItem.classList.remove('dragging');
+                    draggedItem = null;
+                }
+            });
+
+            adminProjectListContainer.addEventListener('dragover', e => {
+                e.preventDefault(); 
+                if (draggedItem) {
+                    const afterElement = getDragAfterElement(adminProjectListContainer, e.clientY);
+                    if (afterElement == null) {
+                        adminProjectListContainer.appendChild(draggedItem);
+                    } else {
+                        adminProjectListContainer.insertBefore(draggedItem, afterElement);
+                    }
+                }
+            });
+
+            adminProjectListContainer.addEventListener('drop', e => {
+                e.preventDefault();
+                if(draggedItem) {
+                    document.getElementById('save-project-order-btn').classList.remove('hidden');
+                }
+            });
+
+            function getDragAfterElement(container, y) {
+                const draggableElements = [...container.querySelectorAll('.project-admin-item:not(.dragging)')];
+
+                return draggableElements.reduce((closest, child) => {
+                    const box = child.getBoundingClientRect();
+                    const offset = y - box.top - box.height / 2;
+                    if (offset < 0 && offset > closest.offset) {
+                        return { offset: offset, element: child };
+                    } else {
+                        return closest;
+                    }
+                }, { offset: Number.NEGATIVE_INFINITY }).element;
+            }
+
+            document.getElementById('save-project-order-btn').addEventListener('click', async () => {
+                const projectItems = document.querySelectorAll('#admin-project-list .project-admin-item');
+                const newProjectOrder = Array.from(projectItems).map(item => item.dataset.projectName);
+
+                try {
+                    await postToAction({ action: 'reorderProjects', projectOrder: newProjectOrder });
+                    showMessage('อัปเดตลำดับโครงการสำเร็จแล้ว', 'success');
+                    document.getElementById('save-project-order-btn').classList.add('hidden');
+                    await loadProjectsAndRender();
+                } catch(err) { /* Error already handled */ }
+            });
 
             setupAutocomplete();
         }
@@ -1484,12 +1455,9 @@
             setupEventListeners();
             loadProjectsAndRender();
             showView("project-selection-view");
-            updateTrackerLabels(); // Initial update of labels on load
+            updateAllLabels(); // Initial update of all labels on load
         };
     </script>
 </body>
 </html>
-
-
-
 
